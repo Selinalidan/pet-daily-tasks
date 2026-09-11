@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>PET冲刺 - 互动学习</title>
+<title>PET冲刺 - Day 1 互动学习</title>
 <style>
 * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
 body {
@@ -32,13 +32,6 @@ body {
 .content { padding: 16px; }
 .back-btn { background: white; border: none; padding: 10px 16px; border-radius: 10px; font-size: 14px; font-weight: 600; color: #667eea; cursor: pointer; margin-bottom: 16px; box-shadow: 0 2px 6px rgba(0,0,0,0.08); }
 
-/* 天数选择 */
-.day-selector { display: flex; gap: 10px; margin-bottom: 20px; }
-.day-btn { flex: 1; padding: 16px 8px; border: 2px solid #e8e8e8; border-radius: 14px; background: white; cursor: pointer; text-align: center; transition: all 0.2s; }
-.day-btn.active { border-color: #667eea; background: #f0f3ff; }
-.day-btn .day-num { font-size: 24px; font-weight: 800; color: #667eea; }
-.day-btn .day-label { font-size: 12px; color: #888; margin-top: 4px; }
-
 /* 任务卡片 */
 .section-title { font-size: 16px; font-weight: 700; margin: 16px 0 12px; color: #333; display: flex; align-items: center; gap: 8px; }
 .task-card {
@@ -52,6 +45,7 @@ body {
 .task-icon.listening { background: #e6f7ff; }
 .task-icon.vocab { background: #fff7e6; }
 .task-icon.reading { background: #f6ffed; }
+.task-icon.wrong { background: #fff2f0; }
 .task-info { flex: 1; min-width: 0; }
 .task-name { font-size: 16px; font-weight: 600; margin-bottom: 4px; }
 .task-meta { font-size: 13px; color: #888; display: flex; gap: 12px; }
@@ -135,28 +129,40 @@ body {
 /* 词汇闪卡 */
 .flashcard-container { perspective: 1000px; margin-bottom: 20px; }
 .flashcard {
-  width: 100%; height: 300px; position: relative; transform-style: preserve-3d;
+  width: 100%; min-height: 380px; position: relative; transform-style: preserve-3d;
   transition: transform 0.6s; cursor: pointer;
 }
 .flashcard.flipped { transform: rotateY(180deg); }
 .flashcard-face {
-  position: absolute; width: 100%; height: 100%; backface-visibility: hidden; border-radius: 20px;
+  position: absolute; width: 100%; min-height: 380px; backface-visibility: hidden; border-radius: 20px;
   display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 24px;
   box-shadow: 0 4px 20px rgba(0,0,0,0.1);
 }
 .flashcard-front { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; }
 .flashcard-back { background: white; transform: rotateY(180deg); border: 3px solid #667eea; }
-.flashcard-word { font-size: 36px; font-weight: 800; margin-bottom: 12px; text-align: center; }
-.flashcard-phonetic { font-size: 18px; opacity: 0.9; margin-bottom: 16px; }
+.flashcard-word { font-size: 36px; font-weight: 800; margin-bottom: 8px; text-align: center; }
+.flashcard-phonetic { font-size: 18px; opacity: 0.9; margin-bottom: 12px; }
 .flashcard-speak-btn {
-  width: 48px; height: 48px; border-radius: 50%; background: rgba(255,255,255,0.2); border: none;
-  font-size: 24px; cursor: pointer; display: flex; align-items: center; justify-content: center; margin-top: 8px;
+  width: 52px; height: 52px; border-radius: 50%; background: rgba(255,255,255,0.2); border: none;
+  font-size: 24px; cursor: pointer; display: flex; align-items: center; justify-content: center; margin: 8px 0;
+  transition: transform 0.2s;
 }
-.flashcard-hint { font-size: 14px; opacity: 0.8; position: absolute; bottom: 20px; }
-.flashcard-meaning { font-size: 28px; font-weight: 700; color: #333; margin-bottom: 16px; text-align: center; }
-.flashcard-example { font-size: 15px; color: #666; line-height: 1.6; text-align: center; padding: 0 10px; font-style: italic; }
-.flashcard-actions { display: flex; gap: 12px; margin-top: 16px; }
-.flashcard-btn { flex: 1; padding: 16px; border: none; border-radius: 14px; font-size: 16px; font-weight: 700; cursor: pointer; transition: all 0.2s; }
+.flashcard-speak-btn:active { transform: scale(0.9); }
+.flashcard-speak-btn.playing { animation: pulse 1s infinite; }
+.flashcard-hint { font-size: 13px; opacity: 0.8; margin-top: 12px; text-align: center; }
+.flashcard-meaning { font-size: 26px; font-weight: 700; color: #333; margin-bottom: 16px; text-align: center; }
+.flashcard-example-box { width: 100%; background: #f8f9ff; border-radius: 12px; padding: 14px; margin-bottom: 12px; }
+.flashcard-example-en { font-size: 15px; color: #333; line-height: 1.6; margin-bottom: 8px; font-style: italic; }
+.flashcard-example-en .highlight { background: #fff3cd; padding: 1px 4px; border-radius: 3px; font-weight: 700; color: #d48806; }
+.flashcard-example-cn { font-size: 14px; color: #888; line-height: 1.5; }
+.flashcard-example-speak {
+  width: 40px; height: 40px; border-radius: 50%; background: #667eea; border: none;
+  font-size: 18px; cursor: pointer; display: flex; align-items: center; justify-content: center; color: white;
+  margin: 8px auto 0; transition: transform 0.2s;
+}
+.flashcard-example-speak:active { transform: scale(0.9); }
+.flashcard-actions { display: flex; gap: 12px; margin-top: 16px; width: 100%; }
+.flashcard-btn { flex: 1; padding: 14px; border: none; border-radius: 14px; font-size: 15px; font-weight: 700; cursor: pointer; transition: all 0.2s; }
 .flashcard-btn:active { transform: scale(0.96); }
 .flashcard-btn.know { background: linear-gradient(135deg, #52c41a 0%, #73d13d 100%); color: white; }
 .flashcard-btn.unknown { background: linear-gradient(135deg, #ff4d4f 0%, #ff7875 100%); color: white; }
@@ -195,6 +201,17 @@ body {
 
 .reading-passage::-webkit-scrollbar { width: 4px; }
 .reading-passage::-webkit-scrollbar-thumb { background: #ddd; border-radius: 2px; }
+
+/* 错题本 */
+.wrong-list { background: white; border-radius: 16px; padding: 16px; margin-bottom: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
+.wrong-item { padding: 12px 0; border-bottom: 1px solid #f0f0f0; }
+.wrong-item:last-child { border-bottom: none; }
+.wrong-question { font-size: 14px; font-weight: 600; color: #333; margin-bottom: 6px; }
+.wrong-answer { font-size: 13px; color: #888; }
+.wrong-answer .correct { color: #52c41a; font-weight: 600; }
+.wrong-answer .wrong { color: #ff4d4f; font-weight: 600; }
+.empty-state { text-align: center; padding: 40px 20px; color: #999; }
+.empty-state .emoji { font-size: 48px; margin-bottom: 12px; }
 </style>
 </head>
 <body>
@@ -204,39 +221,24 @@ body {
   <div class="header">
     <div class="header-top">
       <div>
-        <div class="day-title" id="headerTitle">PET冲刺</div>
-        <div class="day-subtitle" id="headerSubtitle">互动学习 · 前3天</div>
+        <div class="day-title">PET冲刺 Day 1</div>
+        <div class="day-subtitle">第一天 · 互动学习</div>
       </div>
       <div class="score-badge">⭐ <span id="totalScore">0</span>分</div>
     </div>
     <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
-    <div class="progress-text" id="progressText">已完成 0/12 个任务</div>
+    <div class="progress-text" id="progressText">已完成 0/4 个任务</div>
   </div>
 
   <!-- 首页 -->
   <div class="content" id="homePage">
-    <div class="day-selector">
-      <div class="day-btn active" onclick="selectDay(1)">
-        <div class="day-num">1</div>
-        <div class="day-label">第一天</div>
-      </div>
-      <div class="day-btn" onclick="selectDay(2)">
-        <div class="day-num">2</div>
-        <div class="day-label">第二天</div>
-      </div>
-      <div class="day-btn" onclick="selectDay(3)">
-        <div class="day-num">3</div>
-        <div class="day-label">第三天</div>
-      </div>
-    </div>
-
     <div class="section-title"><span>🌅</span> 早上任务</div>
     <div class="task-card" id="card-listening" onclick="startTask('listening')">
       <div class="task-icon listening">🎧</div>
       <div class="task-info">
-        <div class="task-name" id="name-listening">听力精听</div>
+        <div class="task-name">听力精听</div>
         <div class="task-meta">
-          <span id="meta-listening">⏱ 10分钟</span>
+          <span>⏱ 10分钟</span>
           <span class="task-points">+15分</span>
         </div>
       </div>
@@ -246,9 +248,9 @@ body {
     <div class="task-card" id="card-vocab" onclick="startTask('vocab')">
       <div class="task-icon vocab">📚</div>
       <div class="task-info">
-        <div class="task-name" id="name-vocab">词汇句子跟读</div>
+        <div class="task-name">词汇句子跟读</div>
         <div class="task-meta">
-          <span id="meta-vocab">⏱ 15分钟</span>
+          <span>⏱ 15分钟 · 15个词</span>
           <span class="task-points">+10分</span>
         </div>
       </div>
@@ -259,9 +261,9 @@ body {
     <div class="task-card" id="card-reading" onclick="startTask('reading')">
       <div class="task-icon reading">📖</div>
       <div class="task-info">
-        <div class="task-name" id="name-reading">阅读原题</div>
+        <div class="task-name">阅读原题</div>
         <div class="task-meta">
-          <span id="meta-reading">⏱ 20分钟</span>
+          <span>⏱ 20分钟</span>
           <span class="task-points">+20分</span>
         </div>
       </div>
@@ -273,11 +275,23 @@ body {
       <div class="task-info">
         <div class="task-name">词汇复习辨识</div>
         <div class="task-meta">
-          <span>⏱ 5分钟</span>
+          <span>⏱ 5分钟 · 复习15个词</span>
           <span class="task-points">+10分</span>
         </div>
       </div>
       <div class="task-status todo" id="status-review">未开始</div>
+    </div>
+
+    <div class="section-title"><span>📝</span> 错题本</div>
+    <div class="task-card" id="card-wrong" onclick="showWrongBook()">
+      <div class="task-icon wrong">❌</div>
+      <div class="task-info">
+        <div class="task-name">错题复习</div>
+        <div class="task-meta">
+          <span id="wrongCount">0 道错题</span>
+        </div>
+      </div>
+      <div class="task-status todo">去复习</div>
     </div>
   </div>
 
@@ -285,6 +299,13 @@ body {
   <div class="content" id="quizPage" style="display:none;">
     <button class="back-btn" onclick="goHome()">← 返回首页</button>
     <div id="quizContent"></div>
+  </div>
+
+  <!-- 错题本页 -->
+  <div class="content" id="wrongPage" style="display:none;">
+    <button class="back-btn" onclick="goHome()">← 返回首页</button>
+    <div class="section-title"><span>❌</span> 错题本</div>
+    <div id="wrongBookContent"></div>
   </div>
 
   <!-- 完成页 -->
@@ -302,13 +323,13 @@ body {
       <div class="nav-icon">🏠</div>
       <div class="nav-label">首页</div>
     </div>
+    <div class="nav-item" onclick="showWrongBook()">
+      <div class="nav-icon">📝</div>
+      <div class="nav-label">错题本</div>
+    </div>
     <div class="nav-item" onclick="showStats()">
       <div class="nav-icon">📊</div>
       <div class="nav-label">统计</div>
-    </div>
-    <div class="nav-item" onclick="showSettings()">
-      <div class="nav-icon">⚙️</div>
-      <div class="nav-label">设置</div>
     </div>
   </div>
 
@@ -317,106 +338,81 @@ body {
 <audio id="audioPlayer" preload="auto"></audio>
 
 <script>
-// ===== 数据 =====
-const listeningData = {
-  1: [
-    { question: "Which sport are the friends going to do today?", options: ["Tennis", "Football", "Swimming"], correct: 2,
-      transcript: "Boy: It's such a sunny day! Shall we go to the park for a game of tennis?\nGirl: I'd love to, but I've got a sore arm, so I can't hold the racket.\nBoy: Oh, what about football then?\nGirl: Actually, my brother has taken the ball. Why don't we just head to the pool? A cool swim sounds perfect in this heat.\nBoy: Good idea. Let's go.",
-      explanation: "女孩说胳膊疼不能打网球，弟弟拿走了足球不能踢，最后建议去游泳(go to the pool)，男孩同意了。所以选C Swimming。" },
-    { question: "What did the woman leave on the bus?", options: ["A handbag", "Sunglasses", "An umbrella"], correct: 1,
-      transcript: "Woman: Excuse me, I think I left something on the number 10 bus earlier.\nStaff: Was it a handbag? A black one was found this morning.\nWoman: No, I have mine right here. I thought I might have left my umbrella because it started raining, but I just found that in my car. It must be my sunglasses. I remember taking them off when I got on the bus.",
-      explanation: "女士说手提包还在，雨伞在车里找到了，最后确定是太阳镜(sunglasses)落在公交车上了。所以选A Sunglasses。" },
-    { question: "What time will the meeting start?", options: ["2:30", "2:45", "2:45"], correct: 1,
-      transcript: "Man: Is the meeting still at half past two?\nWoman: It was supposed to be, but Mr Jenkins is running late from another appointment. He asked if we could push it back by fifteen minutes.\nMan: That's fine. I thought it might be delayed until quarter to three, so that's not too bad. See you then.",
-      explanation: "会议原定2:30，Mr Jenkins要求推迟15分钟(push it back by fifteen minutes)，所以是2:45。注意选项B和C都是2:45，实际答案是B。" }
-  ],
-  2: [
-    { question: "Where will they meet after school?", options: ["School gate", "Library", "Sports centre"], correct: 2,
-      transcript: "Girl: Are we still meeting outside the school gate at four?\nBoy: I was going to, but it's supposed to rain later. We could meet in the library instead.\nGirl: I'm not sure it stays open that late.\nBoy: You're right. Actually, the sports centre is open until six. Let's meet there. We can have a drink while we wait.",
-      explanation: "校门口可能下雨，图书馆关门太早，最后决定在体育中心(sports centre)见面。所以选C Sports centre。" },
-    { question: "What will the boy buy for his sister?", options: ["A book", "A scarf", "Headphones"], correct: 2,
-      transcript: "Boy: I'm choosing a present for my sister. Should I get her a book?\nGirl: She already has lots of books. What about a scarf?\nBoy: Maybe, but she loves music. I'll buy her headphones. She can use them when she's studying.",
-      explanation: "书已经很多了，围巾只是可能，最后男孩决定买耳机(headphones)，因为妹妹喜欢音乐。所以选C Headphones。" },
-    { question: "When is the class trip to the museum?", options: ["Monday", "Wednesday", "Friday"], correct: 1,
-      transcript: "Girl: When is the class trip to the museum? Is it Monday?\nBoy: No, Monday is the sports day.\nGirl: Wednesday then?\nBoy: Yes, it's on Wednesday. We'll leave school at nine and come back at three.",
-      explanation: "周一运动会，周三去博物馆。所以选B Wednesday。" },
-    { question: "What will the girl do first?", options: ["Call a technician", "Send an email", "Restart the computer"], correct: 1,
-      transcript: "Girl: My computer won't connect to the internet again.\nBoy: You could call a technician.\nGirl: First I'll send an email to the school IT support team. If they don't reply by tomorrow, I'll call someone.",
-      explanation: "女孩说首先(first)给学校IT支持发邮件(send an email)，明天没回复再打电话。所以选B Send an email。" }
-  ],
-  3: [
-    { question: "What do the friends agree about the new cafe?", options: ["The food is expensive", "The service is slow", "The decoration is modern"], correct: 2,
-      transcript: "Girl: Have you been to that new cafe on Bridge Street yet?\nBoy: Yeah, I went yesterday. The sandwiches were pretty average for the price, to be honest.\nGirl: I know what you mean, though the staff were really helpful and quick. What I really liked was the cool, new furniture and the bright colors.\nBoy: Definitely! It's much better than the old-fashioned place that was there before.",
-      explanation: "男孩觉得食物一般，女孩觉得服务很快，两人都同意的是装修很现代(modern decoration/furniture)。所以选C The decoration is modern。" },
-    { question: "How does the girl feel about the school project?", options: ["Worried about the time", "Confident she'll finish", "Unsure what to include"], correct: 2,
-      transcript: "Boy: How's the history project going, Sarah? We have to hand it in on Friday.\nGirl: I'm not concerned about the time—we've nearly finished. But I'm still not quite sure what Mr Jones wants us to include in the final part. He explained it twice, but I'm still a bit lost.\nBoy: Don't worry, I'll show you my notes later.",
-      explanation: "女孩不担心时间，快完成了，但不确定最后部分要包含什么(unsure what to include)。所以选C Unsure what to include。" },
-    { question: "What did the man like most about the film?", options: ["The ending", "The special effects", "The actor's performance"], correct: 2,
-      transcript: "Woman: That was a great movie, wasn't it? The ending was so surprising!\nMan: Really? I thought it was a bit predictable. And the special effects were nothing special compared to other films. However, I couldn't believe how good the lead actor was. He made the whole character feel so real.\nWoman: You're right, he was brilliant.",
-      explanation: "男人觉得结尾可预测，特效一般，最喜欢的是主角的表演(the actor's performance)。所以选B The actor's performance。" }
-  ]
-};
+// ===== 数据：听力（Day 1）=====
+const listeningData = [
+  { question: "Which sport are the friends going to do today?", options: ["Tennis", "Football", "Swimming"], correct: 2,
+    transcript: "Boy: It's such a sunny day! Shall we go to the park for a game of tennis?\nGirl: I'd love to, but I've got a sore arm, so I can't hold the racket.\nBoy: Oh, what about football then?\nGirl: Actually, my brother has taken the ball. Why don't we just head to the pool? A cool swim sounds perfect in this heat.\nBoy: Good idea. Let's go.",
+    explanation: "女孩说胳膊疼不能打网球，弟弟拿走了足球不能踢，最后建议去游泳(go to the pool)，男孩同意了。所以选C Swimming。" },
+  { question: "What did the woman leave on the bus?", options: ["A handbag", "Sunglasses", "An umbrella"], correct: 1,
+    transcript: "Woman: Excuse me, I think I left something on the number 10 bus earlier.\nStaff: Was it a handbag? A black one was found this morning.\nWoman: No, I have mine right here. I thought I might have left my umbrella because it started raining, but I just found that in my car. It must be my sunglasses. I remember taking them off when I got on the bus.",
+    explanation: "女士说手提包还在，雨伞在车里找到了，最后确定是太阳镜(sunglasses)落在公交车上了。所以选B Sunglasses。" },
+  { question: "What time will the meeting start?", options: ["2:30", "2:45", "3:00"], correct: 1,
+    transcript: "Man: Is the meeting still at half past two?\nWoman: It was supposed to be, but Mr Jenkins is running late from another appointment. He asked if we could push it back by fifteen minutes.\nMan: That's fine. I thought it might be delayed until quarter to three, so that's not too bad. See you then.",
+    explanation: "会议原定2:30，Mr Jenkins要求推迟15分钟(push it back by fifteen minutes)，所以是2:45。选B。" }
+];
 
-const readingData = {
-  1: [
-    { passage: "<p><strong>Club Email</strong></p><p>To: All Swimming Club Members</p><p>From: Secretary</p><p>Just a reminder that the pool will be closed for maintenance this Thursday. As a result, the training session has been moved to Friday at the same time. Please let us know if you cannot attend.</p>",
-      question: "What does the text say?", options: ["The training session on Thursday will be shorter", "Members need to confirm if they are coming to Friday", "Training is moved to a different time on Friday because of repairs"], correct: 1,
-      explanation: "邮件说周四泳池因维护(maintenance)关闭，训练改到周五同一时间。B选项说成员需要确认是否参加周五的训练，符合原文'Please let us know if you cannot attend'。C选项说改到不同时间是错的，原文说'at the same time'。所以选B。" },
-    { passage: "<p><strong>Library Notice</strong></p><p>NOTICE: Computers in the study area are for research purposes only. Students wishing to use them for personal emails or social media should use the laptops available for hire at the main desk.</p>",
-      question: "What does the text say?", options: ["You can only use the study area computers for school work", "You are not allowed to check social media anywhere in the library", "Students can hire laptops if the study area computers are all busy"], correct: 0,
-      explanation: "通知说学习区的电脑只能用于研究目的(research purposes only)，个人邮件和社交媒体应该去前台租笔记本电脑。A选项说只能用于学校作业(school work)，符合原文。B选项说任何地方都不能用社交媒体是错的。C选项说电脑忙了可以租笔记本，原文没说电脑忙，只是说个人用途应该租笔记本。所以选A。" }
-  ],
-  2: [
-    { passage: "<p><strong>Text Message</strong></p><p>Hi Jan,</p><p>I've managed to get tickets for the concert! They were more expensive than we expected, so I hope you still want to go. Let me know by tonight or I'll offer them to someone else.</p><p>- Mark</p>",
-      question: "Mark is texting Jan to:", options: ["ask for the money for the tickets", "find out if Jan is still interested", "explain why he hasn't bought the tickets yet"], correct: 1,
-      explanation: "Mark说买到票了，但比预期贵，希望Jan还想去，让Jan今晚前回复，否则就给别人。所以是想确认Jan是否还有兴趣(find out if Jan is still interested)。选B。" },
-    { passage: "<p><strong>Supermarket Offer</strong></p><p>SPECIAL OFFER: Buy two packs of Italian pasta and get a jar of tomato sauce at half price!</p><p>(Offer applies to 500g packs only)</p>",
-      question: "What does the text say?", options: ["You can get a free jar of sauce if you buy two packs of pasta", "The half-price offer is only for customers buying large packs", "To get the discount on sauce, you must purchase two specific pasta packs"], correct: 2,
-      explanation: "优惠是买两包意大利面，番茄酱半价，且只适用于500g装。C选项说要获得酱料折扣，必须买两包特定的意面，符合原文。A选项说免费是错的，是半价不是免费。B选项说大包装是错的，是500g装。所以选C。" },
-    { passage: "<p><strong>Lab Safety</strong></p><p>CAUTION: No student may enter the chemistry lab unless a teacher is present. Protective clothing must be worn at all times during experiments.</p>",
-      question: "What does the text say?", options: ["Students can only enter the lab to meet their teacher", "A teacher must be in the lab for students to be allowed inside", "You only need to wear protective clothing when the teacher tells you to"], correct: 1,
-      explanation: "警告说除非有老师在场(unless a teacher is present)，否则学生不得进入化学实验室。B选项说老师必须在实验室里学生才能进入，符合原文。A选项说只能进去见老师是错的。C选项说老师让穿才穿是错的，原文说必须一直穿。所以选B。" }
-  ],
-  3: [
-    { passage: "<p><strong>The People</strong></p><p>6. Liam: wants to try a new water sport in August and needs the coach to provide all necessary equipment.</p><p>7. Emma: loves cooking, especially desserts and cakes, and can only attend at weekends.</p><p>8. Noah: likes nature and wildlife, wants to improve his photography, and needs a free or very cheap activity.</p><p>9. Olivia: wants to improve her coding/tech skills, needs a course with a certificate, and will bring her own laptop.</p><p>10. Lucas: wants drama/acting, needs a chance to perform on stage, and the place must be in the city centre.</p>",
-      question: "Liam (Q6) 应该选哪个课程？", options: ["A. Sea Adventures (July, sailing, need wetsuit)", "E. Wind & Waves (August, equipment provided)", "H. Italian Cooking (weekday afternoons)"], correct: 1,
-      explanation: "Liam想在八月尝试新的水上运动，需要教练提供所有装备。E选项Wind & Waves八月开放，提供装备，符合要求。A是七月且需要自己带潜水服。所以选E。" },
-    { passage: "<p><strong>The People</strong></p><p>6. Liam: wants to try a new water sport in August and needs the coach to provide all necessary equipment.</p><p>7. Emma: loves cooking, especially desserts and cakes, and can only attend at weekends.</p><p>8. Noah: likes nature and wildlife, wants to improve his photography, and needs a free or very cheap activity.</p><p>9. Olivia: wants to improve her coding/tech skills, needs a course with a certificate, and will bring her own laptop.</p><p>10. Lucas: wants drama/acting, needs a chance to perform on stage, and the place must be in the city centre.</p>",
-      question: "Emma (Q7) 应该选哪个课程？", options: ["D. The Sweet Shop (weekend, pastries and chocolate)", "H. Italian Cooking (weekday afternoons, pasta and pizza)", "G. City Theatre (city centre, acting)"], correct: 0,
-      explanation: "Emma喜欢烹饪，尤其是甜点和蛋糕，只能周末参加。D选项The Sweet Shop是周末课程，做糕点和巧克力，符合要求。H是工作日下午。所以选D。" },
-    { passage: "<p><strong>The People</strong></p><p>6. Liam: wants to try a new water sport in August and needs the coach to provide all necessary equipment.</p><p>7. Emma: loves cooking, especially desserts and cakes, and can only attend at weekends.</p><p>8. Noah: likes nature and wildlife, wants to improve his photography, and needs a free or very cheap activity.</p><p>9. Olivia: wants to improve her coding/tech skills, needs a course with a certificate, and will bring her own laptop.</p><p>10. Lucas: wants drama/acting, needs a chance to perform on stage, and the place must be in the city centre.</p>",
-      question: "Noah (Q8) 应该选哪个课程？", options: ["B. Nature Focus (free, wildlife photography)", "C. Tech Master (game creation, no certificate)", "F. Photography Pro (expensive, studio)"], correct: 0,
-      explanation: "Noah喜欢自然和野生动物，想提高摄影技术，需要免费或很便宜的活动。B选项Nature Focus是免费的野生动物摄影小组，符合要求。所以选B。" }
-  ]
-};
+// ===== 数据：阅读（Day 1）=====
+const readingData = [
+  { passage: "<p><strong>Club Email</strong></p><p>To: All Swimming Club Members</p><p>From: Secretary</p><p>Just a reminder that the pool will be closed for maintenance this Thursday. As a result, the training session has been moved to Friday at the same time. Please let us know if you cannot attend.</p>",
+    question: "What does the text say?", options: ["The training session on Thursday will be shorter", "Members need to confirm if they are coming to Friday", "Training is moved to a different time on Friday because of repairs"], correct: 1,
+    explanation: "邮件说周四泳池因维护(maintenance)关闭，训练改到周五同一时间。B选项说成员需要确认是否参加周五的训练，符合原文'Please let us know if you cannot attend'。C选项说改到不同时间是错的，原文说'at the same time'。所以选B。" },
+  { passage: "<p><strong>Library Notice</strong></p><p>NOTICE: Computers in the study area are for research purposes only. Students wishing to use them for personal emails or social media should use the laptops available for hire at the main desk.</p>",
+    question: "What does the text say?", options: ["You can only use the study area computers for school work", "You are not allowed to check social media anywhere in the library", "Students can hire laptops if the study area computers are all busy"], correct: 0,
+    explanation: "通知说学习区的电脑只能用于研究目的(research purposes only)，个人邮件和社交媒体应该去前台租笔记本电脑。A选项说只能用于学校作业(school work)，符合原文。B选项说任何地方都不能用社交媒体是错的。C选项说电脑忙了可以租笔记本，原文没说电脑忙，只是说个人用途应该租笔记本。所以选A。" }
+];
 
-const vocabData = {
-  1: [
-    { word: "achieve", phonetic: "/əˈtʃiːv/", meaning: "实现，达到", example: "She worked hard to achieve her dream of becoming a doctor." },
-    { word: "advantage", phonetic: "/ədˈvɑːntɪdʒ/", meaning: "优势，好处", example: "One advantage of living in the city is that there are many shops." },
-    { word: "available", phonetic: "/əˈveɪləbl/", meaning: "可用的，有空的", example: "Is the doctor available this afternoon?" },
-    { word: "benefit", phonetic: "/ˈbenɪfɪt/", meaning: "好处，受益", example: "Regular exercise has many benefits for your health." },
-    { word: "challenge", phonetic: "/ˈtʃælɪndʒ/", meaning: "挑战", example: "Learning a new language can be a big challenge." }
-  ],
-  2: [
-    { word: "communicate", phonetic: "/kəˈmjuːnɪkeɪt/", meaning: "交流，沟通", example: "It's important to communicate clearly with your teammates." },
-    { word: "community", phonetic: "/kəˈmjuːnəti/", meaning: "社区", example: "Our community has a new park and a library." },
-    { word: "compare", phonetic: "/kəmˈpeər/", meaning: "比较", example: "If you compare the two phones, you'll see this one is better." },
-    { word: "compete", phonetic: "/kəmˈpiːt/", meaning: "竞争", example: "About 200 students will compete in the swimming race." },
-    { word: "concentrate", phonetic: "/ˈkɒnsntreɪt/", meaning: "集中注意力", example: "I can't concentrate when the TV is on." }
-  ],
-  3: [
-    { word: "confidence", phonetic: "/ˈkɒnfɪdəns/", meaning: "信心", example: "She gained confidence after giving a speech in front of the class." },
-    { word: "consider", phonetic: "/kənˈsɪdər/", meaning: "考虑", example: "Before you decide, please consider all the options carefully." },
-    { word: "contribute", phonetic: "/kənˈtrɪbjuːt/", meaning: "贡献", example: "Everyone should contribute to protecting the environment." },
-    { word: "convenient", phonetic: "/kənˈviːniənt/", meaning: "方便的", example: "The new supermarket is very convenient for people living nearby." },
-    { word: "creative", phonetic: "/kriˈeɪtɪv/", meaning: "有创造力的", example: "She is very creative and always comes up with new ideas." }
-  ]
-};
+// ===== 数据：词汇（Day 1，15个PET高频词，带真题例句+中文翻译）=====
+const vocabData = [
+  { word: "achieve", phonetic: "/əˈtʃiːv/", meaning: "实现，达到",
+    example: "She worked hard to achieve her dream of becoming a doctor.",
+    exampleCn: "她努力工作，实现了成为医生的梦想。" },
+  { word: "advantage", phonetic: "/ədˈvɑːntɪdʒ/", meaning: "优势，好处",
+    example: "One advantage of living in the city is that there are many shops.",
+    exampleCn: "住在城市的一个好处是有很多商店。" },
+  { word: "available", phonetic: "/əˈveɪləbl/", meaning: "可用的，有空的",
+    example: "Is the doctor available this afternoon? I need to make an appointment.",
+    exampleCn: "医生今天下午有空吗？我需要预约。" },
+  { word: "benefit", phonetic: "/ˈbenɪfɪt/", meaning: "好处，受益",
+    example: "Regular exercise has many benefits for your health.",
+    exampleCn: "经常锻炼对你的健康有很多好处。" },
+  { word: "challenge", phonetic: "/ˈtʃælɪndʒ/", meaning: "挑战",
+    example: "Learning a new language can be a big challenge, but it's also fun.",
+    exampleCn: "学习一门新语言可能是一个很大的挑战，但也很有趣。" },
+  { word: "communicate", phonetic: "/kəˈmjuːnɪkeɪt/", meaning: "交流，沟通",
+    example: "It's important to communicate clearly with your teammates.",
+    exampleCn: "与队友清晰沟通很重要。" },
+  { word: "community", phonetic: "/kəˈmjuːnəti/", meaning: "社区",
+    example: "Our community has a new park and a library.",
+    exampleCn: "我们社区有一个新公园和一个图书馆。" },
+  { word: "compare", phonetic: "/kəmˈpeər/", meaning: "比较",
+    example: "If you compare the two phones, you'll see this one is better.",
+    exampleCn: "如果你比较这两部手机，你会发现这一部更好。" },
+  { word: "compete", phonetic: "/kəmˈpiːt/", meaning: "竞争，比赛",
+    example: "About 200 students will compete in the swimming race.",
+    exampleCn: "大约200名学生将参加游泳比赛。" },
+  { word: "concentrate", phonetic: "/ˈkɒnsntreɪt/", meaning: "集中注意力",
+    example: "I can't concentrate when the TV is on.",
+    exampleCn: "电视开着的时候我无法集中注意力。" },
+  { word: "confidence", phonetic: "/ˈkɒnfɪdəns/", meaning: "信心",
+    example: "She gained confidence after giving a speech in front of the class.",
+    exampleCn: "在全班面前演讲后，她获得了信心。" },
+  { word: "consider", phonetic: "/kənˈsɪdər/", meaning: "考虑",
+    example: "Before you decide, please consider all the options carefully.",
+    exampleCn: "在你决定之前，请仔细考虑所有选项。" },
+  { word: "contribute", phonetic: "/kənˈtrɪbjuːt/", meaning: "贡献",
+    example: "Everyone should contribute to protecting the environment.",
+    exampleCn: "每个人都应该为保护环境做出贡献。" },
+  { word: "convenient", phonetic: "/kənˈviːniənt/", meaning: "方便的",
+    example: "The new supermarket is very convenient for people living nearby.",
+    exampleCn: "新超市对住在附近的人来说非常方便。" },
+  { word: "creative", phonetic: "/kriˈeɪtɪv/", meaning: "有创造力的",
+    example: "She is very creative and always comes up with new ideas.",
+    exampleCn: "她很有创造力，总是能想出新点子。" }
+];
 
-// ===== 状态 =====
+// ===== 状态管理（含localStorage保存）=====
+const STORAGE_KEY = 'pet_day1_progress';
 let state = {
-  currentDay: 1,
   totalScore: 0,
   completedTasks: {},
   currentTask: null,
@@ -427,8 +423,36 @@ let state = {
   vocabIndex: 0,
   vocabKnown: 0,
   vocabUnknown: 0,
-  audioPlaying: false
+  audioPlaying: false,
+  wrongQuestions: [],
+  vocabMastery: {}
 };
+
+// 从localStorage加载进度
+function loadProgress() {
+  try {
+    const saved = localStorage.getItem(STORAGE_KEY);
+    if (saved) {
+      const data = JSON.parse(saved);
+      state.totalScore = data.totalScore || 0;
+      state.completedTasks = data.completedTasks || {};
+      state.wrongQuestions = data.wrongQuestions || [];
+      state.vocabMastery = data.vocabMastery || {};
+    }
+  } catch(e) { console.log('加载进度失败', e); }
+}
+
+// 保存进度到localStorage
+function saveProgress() {
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify({
+      totalScore: state.totalScore,
+      completedTasks: state.completedTasks,
+      wrongQuestions: state.wrongQuestions,
+      vocabMastery: state.vocabMastery
+    }));
+  } catch(e) { console.log('保存进度失败', e); }
+}
 
 // ===== 音效 =====
 let audioCtx = null;
@@ -464,13 +488,24 @@ function playClickSound() {
   osc.start(audioCtx.currentTime); osc.stop(audioCtx.currentTime + 0.1);
 }
 
-// 人声发音
+// 人声发音（单词）
 function speakWord(word) {
   if ('speechSynthesis' in window) {
     window.speechSynthesis.cancel();
     const utterance = new SpeechSynthesisUtterance(word);
     utterance.lang = 'en-US';
     utterance.rate = 0.8;
+    window.speechSynthesis.speak(utterance);
+  }
+}
+
+// 人声发音（例句）
+function speakExample(sentence) {
+  if ('speechSynthesis' in window) {
+    window.speechSynthesis.cancel();
+    const utterance = new SpeechSynthesisUtterance(sentence);
+    utterance.lang = 'en-US';
+    utterance.rate = 0.75;
     window.speechSynthesis.speak(utterance);
   }
 }
@@ -488,42 +523,40 @@ function showCelebration(emoji) {
 function showHome() {
   document.getElementById('homePage').style.display = 'block';
   document.getElementById('quizPage').style.display = 'none';
+  document.getElementById('wrongPage').style.display = 'none';
   document.getElementById('completePage').classList.remove('active');
   window.scrollTo(0, 0);
 }
 function showQuiz() {
   document.getElementById('homePage').style.display = 'none';
   document.getElementById('quizPage').style.display = 'block';
+  document.getElementById('wrongPage').style.display = 'none';
+  document.getElementById('completePage').classList.remove('active');
+  window.scrollTo(0, 0);
+}
+function showWrongPage() {
+  document.getElementById('homePage').style.display = 'none';
+  document.getElementById('quizPage').style.display = 'none';
+  document.getElementById('wrongPage').style.display = 'block';
   document.getElementById('completePage').classList.remove('active');
   window.scrollTo(0, 0);
 }
 function showComplete() {
   document.getElementById('homePage').style.display = 'none';
   document.getElementById('quizPage').style.display = 'none';
+  document.getElementById('wrongPage').style.display = 'none';
   document.getElementById('completePage').classList.add('active');
   window.scrollTo(0, 0);
 }
 function goHome() { playClickSound(); showHome(); updateProgress(); }
 
-// ===== 选择天数 =====
-function selectDay(day) {
-  playClickSound();
-  state.currentDay = day;
-  document.querySelectorAll('.day-btn').forEach((btn, i) => btn.classList.toggle('active', i === day - 1));
-  document.getElementById('headerTitle').textContent = `PET冲刺 Day ${day}`;
-  document.getElementById('headerSubtitle').textContent = `第${day}天 · 互动学习`;
-  updateTaskStatus();
-}
-
 // ===== 更新任务状态 =====
 function updateTaskStatus() {
-  const day = state.currentDay;
   const tasks = ['listening', 'vocab', 'reading', 'review'];
   tasks.forEach(task => {
-    const key = `${day}-${task}`;
     const statusEl = document.getElementById(`status-${task}`);
     const cardEl = document.getElementById(`card-${task}`);
-    if (state.completedTasks[key]) {
+    if (state.completedTasks[task]) {
       statusEl.className = 'task-status done';
       statusEl.textContent = '已完成';
       cardEl.classList.add('completed');
@@ -533,7 +566,16 @@ function updateTaskStatus() {
       cardEl.classList.remove('completed');
     }
   });
+  document.getElementById('wrongCount').textContent = state.wrongQuestions.length + ' 道错题';
   updateProgress();
+}
+
+function updateProgress() {
+  const total = 4;
+  const done = Object.keys(state.completedTasks).length;
+  document.getElementById('totalScore').textContent = state.totalScore;
+  document.getElementById('progressFill').style.width = (done/total*100) + '%';
+  document.getElementById('progressText').textContent = `已完成 ${done}/${total} 个任务`;
 }
 
 // ===== 开始任务 =====
@@ -550,20 +592,20 @@ function startTask(task) {
 
   if (task === 'listening') renderListening();
   else if (task === 'reading') renderReading();
-  else if (task === 'vocab' || task === 'review') renderVocab();
+  else if (task === 'vocab') renderVocab(false);
+  else if (task === 'review') renderVocab(true);
 
   showQuiz();
 }
 
 // ===== 听力 =====
 function renderListening() {
-  const questions = listeningData[state.currentDay];
-  const q = questions[state.currentQuestion];
+  const q = listeningData[state.currentQuestion];
   const container = document.getElementById('quizContent');
   container.innerHTML = `
     <div class="quiz-header">
       <div class="quiz-progress">
-        <span class="quiz-num">第 ${state.currentQuestion + 1}/${questions.length} 题</span>
+        <span class="quiz-num">第 ${state.currentQuestion + 1}/${listeningData.length} 题</span>
         <span class="quiz-score">本轮得分: ${state.quizScore}</span>
       </div>
       <div class="quiz-title">${q.question}</div>
@@ -603,23 +645,19 @@ function playListening() {
     return;
   }
 
-  // 使用真实听力音频
   audio.src = 'assets/PET听力整套(1).mp3';
   audio.play().then(() => {
     state.audioPlaying = true;
     btn.classList.add('playing');
     btn.textContent = '⏸️';
   }).catch(e => {
-    btn.textContent = '🔊';
-    // 如果音频加载失败，用语音合成读原文
-    const q = listeningData[state.currentDay][state.currentQuestion];
-    speakWord(q.transcript);
-    setTimeout(() => { btn.textContent = '▶️'; }, 3000);
+    console.log('音频播放失败', e);
+    alert('音频加载中，请稍后再试，或检查网络连接');
   });
 
   audio.ontimeupdate = () => {
     const cur = Math.floor(audio.currentTime);
-    const dur = Math.floor(audio.duration || 0);
+    const dur = Math.floor(audio.duration) || 0;
     timeEl.textContent = `${String(Math.floor(cur/60)).padStart(2,'0')}:${String(cur%60).padStart(2,'0')} / ${String(Math.floor(dur/60)).padStart(2,'0')}:${String(dur%60).padStart(2,'0')}`;
   };
   audio.onended = () => {
@@ -631,26 +669,25 @@ function playListening() {
 
 function showTranscript() {
   playClickSound();
-  const q = listeningData[state.currentDay][state.currentQuestion];
+  const q = listeningData[state.currentQuestion];
   const box = document.getElementById('transcriptBox');
   box.style.display = 'block';
   box.innerHTML = `
-    <div style="background:white; border-radius:12px; padding:16px; margin-bottom:16px; box-shadow:0 2px 8px rgba(0,0,0,0.06);">
-      <div style="font-size:15px; font-weight:700; color:#667eea; margin-bottom:10px;">📝 听力原文</div>
-      <div style="font-size:14px; line-height:1.8; color:#444; white-space:pre-line;">${q.transcript}</div>
+    <div class="reading-passage">
+      <div class="passage-title">📝 听力原文</div>
+      <div class="passage-text"><p>${q.transcript.replace(/\n/g, '</p><p>')}</p></div>
     </div>
   `;
 }
 
 // ===== 阅读 =====
 function renderReading() {
-  const questions = readingData[state.currentDay];
-  const q = questions[state.currentQuestion];
+  const q = readingData[state.currentQuestion];
   const container = document.getElementById('quizContent');
   container.innerHTML = `
     <div class="quiz-header">
       <div class="quiz-progress">
-        <span class="quiz-num">第 ${state.currentQuestion + 1}/${questions.length} 题</span>
+        <span class="quiz-num">第 ${state.currentQuestion + 1}/${readingData.length} 题</span>
         <span class="quiz-score">本轮得分: ${state.quizScore}</span>
       </div>
       <div class="quiz-title">${q.question}</div>
@@ -668,187 +705,296 @@ function renderReading() {
     </div>
     <div class="feedback" id="feedback"></div>
     <div class="quiz-actions" id="quizActions" style="display:none;">
-      <button class="action-btn secondary" onclick="retryQuestion()">🔄 再做一次</button>
       <button class="action-btn primary" onclick="nextQuestion()">下一题 →</button>
     </div>
   `;
 }
 
-// ===== 选择题逻辑 =====
+// ===== 选择题通用逻辑 =====
 function selectAnswer(index) {
-  const isListening = state.currentTask === 'listening';
-  const questions = isListening ? listeningData[state.currentDay] : readingData[state.currentDay];
-  const q = questions[state.currentQuestion];
-  const feedback = document.getElementById('feedback');
-  const actions = document.getElementById('quizActions');
+  playClickSound();
+  const data = state.currentTask === 'listening' ? listeningData : readingData;
+  const q = data[state.currentQuestion];
+  const isCorrect = index === q.correct;
 
+  // 禁用所有选项
   document.querySelectorAll('.option-btn').forEach(btn => btn.disabled = true);
 
-  if (index === q.correct) {
+  // 标记选中和正确/错误
+  document.getElementById(`opt-${index}`).classList.add(isCorrect ? 'correct' : 'wrong');
+  if (!isCorrect) {
+    document.getElementById(`opt-${q.correct}`).classList.add('correct');
+  }
+
+  // 播放音效
+  if (isCorrect) {
     playCorrectSound();
-    document.getElementById(`opt-${index}`).classList.add('correct');
-    feedback.className = 'feedback correct show';
-    feedback.innerHTML = `
-      <div class="feedback-title">✅ 答对了！太棒了！</div>
-      <div class="feedback-explanation">💡 ${q.explanation}</div>
-    `;
-    state.quizScore += 5;
     state.quizCorrect++;
-    if (state.quizCorrect % 3 === 0) showCelebration('🔥');
+    state.quizScore += 5;
   } else {
     playWrongSound();
-    document.getElementById(`opt-${index}`).classList.add('wrong');
-    document.getElementById(`opt-${q.correct}`).classList.add('correct');
-    feedback.className = 'feedback wrong show';
-    feedback.innerHTML = `
-      <div class="feedback-title">❌ 答错了，再想想？</div>
-      <div class="feedback-answer">正确答案: <strong>${String.fromCharCode(65+q.correct)}</strong></div>
-      <div class="feedback-explanation">💡 ${q.explanation}</div>
-    `;
     state.quizWrong++;
+    // 加入错题本
+    addWrongQuestion(state.currentTask, q, index);
   }
-  actions.style.display = 'flex';
-}
 
-function retryQuestion() {
-  playClickSound();
-  if (state.currentTask === 'listening') renderListening();
-  else renderReading();
+  // 显示反馈
+  const feedback = document.getElementById('feedback');
+  feedback.className = `feedback ${isCorrect ? 'correct' : 'wrong'} show`;
+  feedback.innerHTML = `
+    <div class="feedback-title">${isCorrect ? '✅ 回答正确！' : '❌ 回答错误'}</div>
+    <div class="feedback-answer">正确答案：<strong>${String.fromCharCode(65+q.correct)}. ${q.options[q.correct]}</strong></div>
+    <div class="feedback-explanation">💡 ${q.explanation}</div>
+  `;
+
+  // 显示下一题按钮
+  document.getElementById('quizActions').style.display = 'flex';
 }
 
 function nextQuestion() {
   playClickSound();
+  const data = state.currentTask === 'listening' ? listeningData : readingData;
   state.currentQuestion++;
-  const isListening = state.currentTask === 'listening';
-  const questions = isListening ? listeningData[state.currentDay] : readingData[state.currentDay];
-  if (state.currentQuestion >= questions.length) {
-    completeTask();
+
+  if (state.currentQuestion >= data.length) {
+    finishQuiz();
   } else {
-    if (isListening) renderListening();
+    if (state.currentTask === 'listening') renderListening();
     else renderReading();
   }
 }
 
-// ===== 词汇闪卡 =====
-function renderVocab() {
-  const words = vocabData[state.currentDay];
-  const w = words[state.vocabIndex];
-  const isReview = state.currentTask === 'review';
+function finishQuiz() {
+  const taskName = state.currentTask === 'listening' ? '听力精听' : '阅读原题';
+  const points = state.currentTask === 'listening' ? 15 : 20;
+  const total = state.quizCorrect + state.quizWrong;
+  const accuracy = total > 0 ? Math.round(state.quizCorrect / total * 100) : 0;
+
+  state.totalScore += points + state.quizScore;
+  state.completedTasks[state.currentTask] = true;
+  saveProgress();
+
+  document.getElementById('completeIcon').textContent = accuracy >= 60 ? '🎉' : '💪';
+  document.getElementById('completeTitle').textContent = `${taskName}完成！`;
+  document.getElementById('completeSubtitle').textContent = accuracy >= 80 ? '太棒了！你做得非常好！' : accuracy >= 60 ? '不错！继续加油！' : '没关系，多练习就会进步！';
+  document.getElementById('completeStats').innerHTML = `
+    <div class="stat-row"><span class="stat-label">答对题数</span><span class="stat-value correct">${state.quizCorrect} 题</span></div>
+    <div class="stat-row"><span class="stat-label">答错题数</span><span class="stat-value wrong">${state.quizWrong} 题</span></div>
+    <div class="stat-row"><span class="stat-label">正确率</span><span class="stat-value">${accuracy}%</span></div>
+    <div class="stat-row"><span class="stat-label">获得积分</span><span class="stat-value points">+${points + state.quizScore} 分</span></div>
+  `;
+
+  showCelebration(accuracy >= 60 ? '🎉' : '💪');
+  showComplete();
+}
+
+// ===== 词汇学习 =====
+function renderVocab(isReview) {
+  const word = vocabData[state.vocabIndex];
   const container = document.getElementById('quizContent');
+  const taskTitle = isReview ? '词汇复习辨识' : '词汇句子跟读';
+  const totalWords = vocabData.length;
+
   container.innerHTML = `
     <div class="quiz-header">
       <div class="quiz-progress">
-        <span class="quiz-num">第 ${state.vocabIndex + 1}/${words.length} 个词</span>
-        <span class="quiz-score">认识: ${state.vocabKnown} | 不认识: ${state.vocabUnknown}</span>
+        <span class="quiz-num">第 ${state.vocabIndex + 1}/${totalWords} 个词</span>
+        <span class="quiz-score">认识: ${state.vocabKnown} / 不认识: ${state.vocabUnknown}</span>
       </div>
-      <div class="quiz-title">${isReview ? '🔄 词汇复习辨识' : '📚 词汇句子跟读'}</div>
+      <div class="quiz-title">${taskTitle}</div>
     </div>
+
     <div class="flashcard-container">
       <div class="flashcard" id="flashcard" onclick="flipCard()">
+        <!-- 正面：单词 -->
         <div class="flashcard-face flashcard-front">
-          <div class="flashcard-word">${w.word}</div>
-          <div class="flashcard-phonetic">${w.phonetic}</div>
-          <button class="flashcard-speak-btn" onclick="event.stopPropagation(); speakWord('${w.word}')">🔊</button>
-          <div class="flashcard-hint">👆 点击卡片查看释义 · 点🔊听发音</div>
+          <div class="flashcard-word">${word.word}</div>
+          <div class="flashcard-phonetic">${word.phonetic}</div>
+          <button class="flashcard-speak-btn" id="wordSpeakBtn" onclick="event.stopPropagation(); playWordAudio('${word.word}')">🔊</button>
+          <div class="flashcard-hint">👆 点击卡片翻面看释义和例句<br>🔊 点击按钮听单词发音</div>
         </div>
+
+        <!-- 背面：释义+例句 -->
         <div class="flashcard-face flashcard-back">
-          <div class="flashcard-meaning">${w.meaning}</div>
-          <div class="flashcard-example">"${w.example}"</div>
+          <div class="flashcard-meaning">${word.meaning}</div>
+          <div class="flashcard-example-box">
+            <div class="flashcard-example-en">${highlightWord(word.example, word.word)}</div>
+            <div class="flashcard-example-cn">${word.exampleCn}</div>
+            <button class="flashcard-example-speak" onclick="event.stopPropagation(); playExampleAudio('${word.example.replace(/'/g, "\\'")}')" title="听例句">🔊</button>
+          </div>
+          <div class="flashcard-hint" style="color:#999;">👆 点击卡片翻回正面</div>
         </div>
       </div>
     </div>
+
     <div class="flashcard-actions">
-      <button class="flashcard-btn unknown" onclick="vocabResult(false)">😕 不认识</button>
-      <button class="flashcard-btn know" onclick="vocabResult(true)">😎 认识</button>
+      <button class="flashcard-btn unknown" onclick="vocabAnswer(false)">😕 不认识</button>
+      <button class="flashcard-btn know" onclick="vocabAnswer(true)">😎 认识</button>
     </div>
-    <div class="flashcard-progress">点击翻面 · 跟读例句3遍 · 然后选择认识或不认识</div>
+    <div class="flashcard-progress">${isReview ? '复习模式：快速过一遍，眼熟就点"认识"' : '学习模式：听单词→跟读→看例句→听例句'}</div>
   `;
-  // 自动发音
-  setTimeout(() => speakWord(w.word), 500);
+
+  // 自动播放单词发音（学习模式下）
+  if (!isReview) {
+    setTimeout(() => playWordAudio(word.word), 500);
+  }
+}
+
+function highlightWord(sentence, word) {
+  const regex = new RegExp(`\\b${word}\\b`, 'gi');
+  return sentence.replace(regex, `<span class="highlight">${word}</span>`);
 }
 
 function flipCard() {
   playClickSound();
-  document.getElementById('flashcard').classList.toggle('flipped');
+  const card = document.getElementById('flashcard');
+  card.classList.toggle('flipped');
+  // 如果翻到背面，自动播放例句
+  if (card.classList.contains('flipped')) {
+    const word = vocabData[state.vocabIndex];
+    setTimeout(() => playExampleAudio(word.example), 300);
+  }
 }
 
-function vocabResult(known) {
-  if (known) { playCorrectSound(); state.vocabKnown++; state.quizScore += 2; }
-  else { playWrongSound(); state.vocabUnknown++; }
+function playWordAudio(word) {
+  const btn = document.getElementById('wordSpeakBtn');
+  if (btn) {
+    btn.classList.add('playing');
+    setTimeout(() => btn.classList.remove('playing'), 1000);
+  }
+  speakWord(word);
+}
+
+function playExampleAudio(sentence) {
+  speakExample(sentence);
+}
+
+function vocabAnswer(known) {
+  playClickSound();
+  const word = vocabData[state.vocabIndex];
+
+  if (known) {
+    playCorrectSound();
+    state.vocabKnown++;
+    state.vocabMastery[word.word] = (state.vocabMastery[word.word] || 0) + 1;
+  } else {
+    playWrongSound();
+    state.vocabUnknown++;
+    state.vocabMastery[word.word] = 0;
+  }
+
   state.vocabIndex++;
-  const words = vocabData[state.currentDay];
-  if (state.vocabIndex >= words.length) {
-    completeTask();
+
+  if (state.vocabIndex >= vocabData.length) {
+    finishVocab();
   } else {
-    renderVocab();
+    const isReview = state.currentTask === 'review';
+    renderVocab(isReview);
   }
 }
 
-// ===== 完成任务 =====
-function completeTask() {
-  const taskPoints = { listening: 15, reading: 20, vocab: 10, review: 10 };
-  const points = taskPoints[state.currentTask] || 10;
-  state.totalScore += state.quizScore + points;
-  state.completedTasks[`${state.currentDay}-${state.currentTask}`] = true;
+function finishVocab() {
+  const isReview = state.currentTask === 'review';
+  const taskName = isReview ? '词汇复习辨识' : '词汇句子跟读';
+  const points = isReview ? 10 : 10;
+  const total = state.vocabKnown + state.vocabUnknown;
+  const knownRate = total > 0 ? Math.round(state.vocabKnown / total * 100) : 0;
 
-  document.getElementById('totalScore').textContent = state.totalScore;
+  state.totalScore += points;
+  state.completedTasks[state.currentTask] = true;
+  saveProgress();
 
+  document.getElementById('completeIcon').textContent = knownRate >= 70 ? '🎉' : '💪';
+  document.getElementById('completeTitle').textContent = `${taskName}完成！`;
+  document.getElementById('completeSubtitle').textContent = knownRate >= 80 ? '太棒了！这些词你都掌握得很好！' : knownRate >= 60 ? '不错！多复习几次就记住了！' : '没关系，多看几遍就眼熟了！';
+  document.getElementById('completeStats').innerHTML = `
+    <div class="stat-row"><span class="stat-label">认识的词</span><span class="stat-value correct">${state.vocabKnown} 个</span></div>
+    <div class="stat-row"><span class="stat-label">不认识的词</span><span class="stat-value wrong">${state.vocabUnknown} 个</span></div>
+    <div class="stat-row"><span class="stat-label">认识率</span><span class="stat-value">${knownRate}%</span></div>
+    <div class="stat-row"><span class="stat-label">获得积分</span><span class="stat-value points">+${points} 分</span></div>
+  `;
+
+  showCelebration(knownRate >= 70 ? '🎉' : '💪');
   showComplete();
-  document.getElementById('completeIcon').textContent = '🎉';
-  document.getElementById('completeTitle').textContent = '任务完成！';
-  document.getElementById('completeSubtitle').textContent = '太棒了，你完成了这个任务！继续加油！';
+}
 
-  let statsHtml = '';
-  if (state.currentTask === 'vocab' || state.currentTask === 'review') {
-    statsHtml = `
-      <div class="stat-row"><span class="stat-label">认识的词</span><span class="stat-value correct">${state.vocabKnown} 个</span></div>
-      <div class="stat-row"><span class="stat-label">不认识的词</span><span class="stat-value wrong">${state.vocabUnknown} 个</span></div>
-      <div class="stat-row"><span class="stat-label">答题得分</span><span class="stat-value points">+${state.quizScore} 分</span></div>
-      <div class="stat-row"><span class="stat-label">完成奖励</span><span class="stat-value points">+${points} 分</span></div>
-      <div class="stat-row"><span class="stat-label">累计总分</span><span class="stat-value points">${state.totalScore} 分</span></div>
+// ===== 错题本 =====
+function addWrongQuestion(type, q, wrongIndex) {
+  const wrongItem = {
+    type: type,
+    question: q.question,
+    options: q.options,
+    correct: q.correct,
+    wrong: wrongIndex,
+    explanation: q.explanation,
+    time: new Date().toLocaleString()
+  };
+  // 去重：同一道题只加一次
+  const exists = state.wrongQuestions.find(w => w.question === q.question);
+  if (!exists) {
+    state.wrongQuestions.push(wrongItem);
+    saveProgress();
+  }
+}
+
+function showWrongBook() {
+  playClickSound();
+  const container = document.getElementById('wrongBookContent');
+
+  if (state.wrongQuestions.length === 0) {
+    container.innerHTML = `
+      <div class="empty-state">
+        <div class="emoji">🌟</div>
+        <div style="font-size:16px;font-weight:600;margin-bottom:8px;">太棒了！</div>
+        <div style="font-size:14px;color:#999;">目前还没有错题，继续保持！</div>
+      </div>
     `;
   } else {
-    const total = state.quizCorrect + state.quizWrong;
-    statsHtml = `
-      <div class="stat-row"><span class="stat-label">答对</span><span class="stat-value correct">${state.quizCorrect} 题</span></div>
-      <div class="stat-row"><span class="stat-label">答错</span><span class="stat-value wrong">${state.quizWrong} 题</span></div>
-      <div class="stat-row"><span class="stat-label">正确率</span><span class="stat-value">${total > 0 ? Math.round(state.quizCorrect/total*100) : 0}%</span></div>
-      <div class="stat-row"><span class="stat-label">答题得分</span><span class="stat-value points">+${state.quizScore} 分</span></div>
-      <div class="stat-row"><span class="stat-label">完成奖励</span><span class="stat-value points">+${points} 分</span></div>
-      <div class="stat-row"><span class="stat-label">累计总分</span><span class="stat-value points">${state.totalScore} 分</span></div>
+    container.innerHTML = `
+      <div class="wrong-list">
+        ${state.wrongQuestions.map((w, i) => `
+          <div class="wrong-item">
+            <div class="wrong-question">${i+1}. ${w.question}</div>
+            <div class="wrong-answer">
+              你的答案：<span class="wrong">${String.fromCharCode(65+w.wrong)}. ${w.options[w.wrong]}</span><br>
+              正确答案：<span class="correct">${String.fromCharCode(65+w.correct)}. ${w.options[w.correct]}</span>
+            </div>
+            <div style="font-size:12px;color:#aaa;margin-top:6px;">💡 ${w.explanation}</div>
+          </div>
+        `).join('')}
+      </div>
+      <button class="action-btn secondary" style="width:100%;" onclick="clearWrongBook()">🗑️ 清空错题本</button>
     `;
   }
-  document.getElementById('completeStats').innerHTML = statsHtml;
 
-  // 检查当天是否全部完成
-  const dayTasks = ['listening', 'vocab', 'reading', 'review'];
-  const dayDone = dayTasks.every(t => state.completedTasks[`${state.currentDay}-${t}`]);
-  if (dayDone) {
-    setTimeout(() => showCelebration('🏆'), 500);
-    document.getElementById('completeSubtitle').textContent = '太厉害了！你完成了今天全部4个任务！你是PET小达人！';
+  showWrongPage();
+}
+
+function clearWrongBook() {
+  if (confirm('确定要清空错题本吗？')) {
+    state.wrongQuestions = [];
+    saveProgress();
+    showWrongBook();
   }
 }
 
-// ===== 进度 =====
-function updateProgress() {
-  const total = 12; // 3天 × 4任务
-  const done = Object.keys(state.completedTasks).length;
-  const percent = (done / total) * 100;
-  document.getElementById('progressFill').style.width = percent + '%';
-  document.getElementById('progressText').textContent = `已完成 ${done}/${total} 个任务`;
-}
-
-// ===== 底部导航 =====
+// ===== 统计页 =====
 function showStats() {
   playClickSound();
-  alert(`📊 学习统计\n\n累计得分: ${state.totalScore} 分\n已完成任务: ${Object.keys(state.completedTasks).length}/12\n\n（统计功能开发中...）`);
-}
-function showSettings() {
-  playClickSound();
-  alert(`⚙️ 设置\n\n音效: 开启\n人声发音: 开启\n每日提醒: 7:00\n\n（设置功能开发中...）`);
+  const totalWords = vocabData.length;
+  const mastered = Object.values(state.vocabMastery).filter(v => v >= 2).length;
+  const learning = Object.values(state.vocabMastery).filter(v => v === 1).length;
+
+  alert(`📊 学习统计\n\n` +
+    `总积分：${state.totalScore} 分\n` +
+    `已完成任务：${Object.keys(state.completedTasks).length}/4\n` +
+    `错题数量：${state.wrongQuestions.length} 道\n` +
+    `词汇掌握：已掌握 ${mastered} 个 / 学习中 ${learning} 个 / 共 ${totalWords} 个\n\n` +
+    `（完整统计功能后续版本会加入）`);
 }
 
-// 初始化
+// ===== 初始化 =====
+loadProgress();
 updateTaskStatus();
 updateProgress();
 </script>
