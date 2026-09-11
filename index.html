@@ -338,22 +338,65 @@ body {
 <audio id="audioPlayer" preload="auto"></audio>
 
 <script>
-// ===== 数据：听力（Day 1）=====
+// ===== 数据：听力（Day 1：Part 1 + Part 2，共13道题）=====
 // 每道题有 startTime 和 endTime（秒），用于控制音频播放片段
 // 时间点通过音频静音分析得出，准确对应每道题的两遍播放
+// 原文来自听力稿，与音频内容一致
 const listeningData = [
-  { question: "Which sport are the friends going to do today?", options: ["Tennis", "Football", "Swimming"], correct: 2,
+  // ===== Part 1：Q1-Q7 短对话题 =====
+  { question: "Which sport are the friends going to do today?", options: ["Football", "Tennis", "Swimming"], correct: 2,
     startTime: 5, endTime: 60,
-    transcript: "Boy: It's such a sunny day! Shall we go to the park for a game of tennis?\nGirl: I'd love to, but I've got a sore arm, so I can't hold the racket.\nBoy: Oh, what about football then?\nGirl: Actually, my brother has taken the ball. Why don't we just head to the pool? A cool swim sounds perfect in this heat.\nBoy: Good idea. Let's go.",
-    explanation: "女孩说胳膊疼不能打网球，弟弟拿走了足球不能踢，最后建议去游泳(go to the pool)，男孩同意了。所以选C Swimming。" },
-  { question: "What did the woman leave on the bus?", options: ["A handbag", "Sunglasses", "An umbrella"], correct: 1,
+    transcript: "Friend 1: Do you want to play football today?\nFriend 2: Not really. It's wet, and the park will be muddy.\nFriend 1: Then let's go swimming at the pool.\nFriend 2: Yes! The pool is indoors. Let's do that.",
+    explanation: "朋友1问今天去踢足球吗，朋友2说不想去，因为下雨公园会泥泞。朋友1建议去游泳池游泳，朋友2同意了，说游泳池是室内的。所以选C Swimming。" },
+  { question: "What did the woman leave on the bus?", options: ["A handbag", "An umbrella", "Sunglasses"], correct: 1,
     startTime: 67, endTime: 103,
-    transcript: "Woman: Excuse me, I think I left something on the number 10 bus earlier.\nStaff: Was it a handbag? A black one was found this morning.\nWoman: No, I have mine right here. I thought I might have left my umbrella because it started raining, but I just found that in my car. It must be my sunglasses. I remember taking them off when I got on the bus.",
-    explanation: "女士说手提包还在，雨伞在车里找到了，最后确定是太阳镜(sunglasses)落在公交车上了。所以选B Sunglasses。" },
-  { question: "What time will the meeting start?", options: ["2:30", "2:45", "3:00"], correct: 1,
+    transcript: "Woman: Oh no, I think I left something on the bus.\nMan: Your handbag?\nWoman: No, I still have my bag. It's my umbrella.\nMan: Let's call the bus company.",
+    explanation: "女士说她把什么东西落在公交车上了。男士问是手提包吗，女士说不是，包还在，是雨伞。所以选B An umbrella。" },
+  { question: "What time will the meeting start?", options: ["2:15", "2:30", "2:45"], correct: 1,
     startTime: 110, endTime: 139,
-    transcript: "Man: Is the meeting still at half past two?\nWoman: It was supposed to be, but Mr Jenkins is running late from another appointment. He asked if we could push it back by fifteen minutes.\nMan: That's fine. I thought it might be delayed until quarter to three, so that's not too bad. See you then.",
-    explanation: "会议原定2:30，Mr Jenkins要求推迟15分钟(push it back by fifteen minutes)，所以是2:45。选B。" }
+    transcript: "Man: What time does the meeting start?\nWoman: It was two fifteen, but it's been moved.\nMan: To two forty five?\nWoman: No, it will start at two thirty now.",
+    explanation: "会议原定2:15，但改时间了。男士问是改到2:45吗，女士说不是，现在是2:30开始。所以选B 2:30。" },
+  { question: "Where will they meet after school?", options: ["At the school gate", "At the sports centre", "In the library"], correct: 2,
+    startTime: 146, endTime: 179,
+    transcript: "Girl: Where shall we meet after school? Outside the school gate?\nBoy: It's going to be crowded there.\nGirl: What about the sports centre?\nBoy: I'm going to the library first. Let's meet in the library.",
+    explanation: "女孩问放学后在哪见面，在校门口吗？男孩说那里会很挤。女孩问体育中心怎么样？男孩说他要先去图书馆，在图书馆见吧。所以选C In the library。" },
+  { question: "What will the boy buy for his sister?", options: ["A book", "A scarf", "Headphones"], correct: 2,
+    startTime: 186, endTime: 224,
+    transcript: "Boy: I'm choosing a present for my sister. Should I get her a book?\nGirl: She already has lots of books. What about a scarf?\nBoy: Maybe, but she loves music. I'll buy her headphones.",
+    explanation: "男孩在给妹妹选礼物，问买书吗？女孩说她已经有很多书了，围巾怎么样？男孩说也许，但她喜欢音乐，他要买耳机。所以选C Headphones。" },
+  { question: "When is the class trip to the museum?", options: ["Monday", "Wednesday", "Friday"], correct: 1,
+    startTime: 231, endTime: 270,
+    transcript: "Girl: When is the class trip to the museum? Is it Monday?\nBoy: No, Monday is the sports day.\nGirl: Wednesday then?\nBoy: Yes, it's on Wednesday.",
+    explanation: "女孩问班级博物馆旅行是什么时候，周一吗？男孩说不是，周一是运动会。女孩说那周三？男孩说是的，在周三。所以选B Wednesday。" },
+  { question: "What will the girl do first?", options: ["Call a technician", "Send an email to IT support", "Buy a new computer"], correct: 1,
+    startTime: 277, endTime: 305,
+    transcript: "Girl: My computer won't connect to the internet again.\nBoy: You could call a technician.\nGirl: First I'll send an email to the school IT support team.",
+    explanation: "女孩说她的电脑又连不上网了。男孩说可以叫技术人员。女孩说她先要给学校IT支持团队发邮件。所以选B Send an email to IT support。" },
+  // ===== Part 2：Q8-Q13 短录音题 =====
+  { question: "What do they both like about the new cafe?", options: ["The fast service", "The food", "The decoration"], correct: 2,
+    startTime: 313, endTime: 372,
+    transcript: "Man: The service wasn't very fast when I went.\nWoman: True. But I love the decoration. It's really modern and bright.\nMan: Yes, the design is modern. I agree.",
+    explanation: "男士说他去的时候服务不是很快。女士说是的，但她喜欢装修，很现代很明亮。男士说设计确实很现代，他同意。所以他们都喜欢装修，选C The decoration。" },
+  { question: "How does the girl feel about the school project?", options: ["Worried about finishing on time", "Excited about the topic", "Bored with the work"], correct: 0,
+    startTime: 379, endTime: 421,
+    transcript: "Girl: The deadline is so close. I'm worried we won't finish in time.",
+    explanation: "女孩说截止日期很近了，她担心不能及时完成。所以选A Worried about finishing on time。" },
+  { question: "What did the man like about the film?", options: ["The acting", "The music", "The ending"], correct: 2,
+    startTime: 428, endTime: 467,
+    transcript: "Man: The ending. It was surprising, and it made the whole story better.",
+    explanation: "男士说结局很令人惊讶，让整个故事变得更好。所以选C The ending。" },
+  { question: "What does the girl like most about her new phone?", options: ["The camera", "The battery life", "The screen size"], correct: 1,
+    startTime: 474, endTime: 511,
+    transcript: "Girl: What I really love is the battery. It lasts two days.",
+    explanation: "女孩说她真正喜欢的是电池，能用两天。所以选B The battery life。" },
+  { question: "What will they do this weekend?", options: ["Go to the park", "Visit a museum", "Stay at home"], correct: 1,
+    startTime: 518, endTime: 557,
+    transcript: "Man: Then let's visit a museum. It's indoors.\nWoman: Good idea.",
+    explanation: "男士说那我们去参观博物馆吧，是室内的。女士说好主意。所以选B Visit a museum。" },
+  { question: "How does the girl feel after the exam?", options: ["Disappointed", "Relieved", "Nervous"], correct: 1,
+    startTime: 564, endTime: 594,
+    transcript: "Girl: I'm just relieved it's finished.",
+    explanation: "女孩说考试结束了她感到松了一口气(relieved)。所以选B Relieved。" }
 ];
 
 // ===== 数据：阅读（Day 1）=====
