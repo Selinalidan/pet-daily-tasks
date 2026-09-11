@@ -560,6 +560,20 @@ function speakExample(sentence) {
 
 // 听力片段播放的定时器
 let listeningInterval = null;
+// 全局定时器管理，防止离开页面后还在播放
+let activeTimeouts = [];
+function safeTimeout(fn, ms) {
+  const id = setTimeout(() => {
+    activeTimeouts = activeTimeouts.filter(t => t !== id);
+    fn();
+  }, ms);
+  activeTimeouts.push(id);
+  return id;
+}
+function clearAllTimeouts() {
+  activeTimeouts.forEach(id => clearTimeout(id));
+  activeTimeouts = [];
+}
 
 // 停止所有音频（HTML5音频 + 人声发音）
 function stopAllAudio() {
@@ -620,7 +634,7 @@ function showComplete() {
   document.getElementById('completePage').classList.add('active');
   window.scrollTo(0, 0);
 }
-function goHome() { playClickSound(); showHome(); updateProgress(); }
+function goHome() { playClickSound(); clearAllTimeouts(); stopAllAudio(); showHome(); updateProgress(); }
 
 // ===== 更新任务状态 =====
 function updateTaskStatus() {
@@ -707,7 +721,7 @@ function renderListening() {
   `;
 
   // 渲染后自动播放本题音频片段
-  setTimeout(() => playListeningSegment(q.startTime, q.endTime), 300);
+  safeTimeout(() => playListeningSegment(q.startTime, q.endTime), 300);
 }
 
 function playListeningSegment(startTime, endTime) {
@@ -891,11 +905,30 @@ function finishQuiz() {
 }
 
 // ===== 词汇学习 =====
+// 词汇学习状态：'listen'（听单词跟读）-> 'quiz'（选择题）-> 'selfeval'（自评）
+let vocabPhase = 'listen';
+let vocabSelectedAnswer = -1;
+let vocabQuizOptions = [];
+
+function generateVocabOptions(correctWord) {
+  // 从所有词的释义中随机选3个作为干扰项
+  const allMeanings = vocabData.map(w => w.meaning).filter(m => m !== correctWord.meaning);
+  const shuffled = allMeanings.sort(() => Math.random() - 0.5);
+  const distractors = shuffled.slice(0, 3);
+  const options = [...distractors, correctWord.meaning].sort(() => Math.random() - 0.5);
+  return options;
+}
+
 function renderVocab(isReview) {
   const word = vocabData[state.vocabIndex];
   const container = document.getElementById('quizContent');
   const taskTitle = isReview ? '词汇复习辨识' : '词汇句子跟读';
   const totalWords = vocabData.length;
+
+  // 生成选择题选项
+  vocabQuizOptions = generateVocabOptions(word);
+  vocabPhase = isReview ? 'quiz' : 'listen';
+  vocabSelectedAnswer = -1;
 
   container.innerHTML = `
     <div class="quiz-header">
@@ -906,56 +939,150 @@ function renderVocab(isReview) {
       <div class="quiz-title">${taskTitle}</div>
     </div>
 
-    <div class="flashcard-container">
-      <div class="flashcard" id="flashcard" onclick="flipCard()">
-        <!-- 正面：单词 -->
-        <div class="flashcard-face flashcard-front">
+    <!-- 单词展示区 -->
+    <div class="flashcard-container" style="margin-bottom:20px;">
+      <div class="flashcard" style="transform:none;">
+        <div class="flashcard-face flashcard-front" style="position:relative;">
           <div class="flashcard-word">${word.word}</div>
           <div class="flashcard-phonetic">${word.phonetic}</div>
           <button class="flashcard-speak-btn" id="wordSpeakBtn" onclick="event.stopPropagation(); playWordAudio('${word.word}')">🔊</button>
-          <div class="flashcard-hint">👆 点击卡片翻面看释义和例句<br>🔊 点击按钮听单词发音</div>
-        </div>
-
-        <!-- 背面：释义+例句 -->
-        <div class="flashcard-face flashcard-back">
-          <div class="flashcard-meaning">${word.meaning}</div>
-          <div class="flashcard-example-box">
-            <div class="flashcard-example-en">${highlightWord(word.example, word.word)}</div>
-            <div class="flashcard-example-cn">${word.exampleCn}</div>
-            <button class="flashcard-example-speak" onclick="event.stopPropagation(); playExampleAudio('${word.example.replace(/'/g, "\\'")}')" title="听例句">🔊</button>
-          </div>
-          <div class="flashcard-hint" style="color:#999;">👆 点击卡片翻回正面</div>
+          <div class="flashcard-hint" id="listenHint">🔊 自动播放单词发音<br>👄 跟着大声读两遍</div>
         </div>
       </div>
     </div>
 
-    <div class="flashcard-actions">
-      <button class="flashcard-btn unknown" onclick="vocabAnswer(false)">😕 不认识</button>
-      <button class="flashcard-btn know" onclick="vocabAnswer(true)">😎 认识</button>
+    <!-- 跟读完成按钮（学习模式） -->
+    <div id="listenPhase" style="${isReview ? 'display:none;' : ''} text-align:center; margin-bottom:20px;">
+      <button class="action-btn primary" style="width:100%;" onclick="vocabGoToQuiz()">✅ 我读完了，开始做题</button>
     </div>
-    <div class="flashcard-progress">${isReview ? '复习模式：快速过一遍，眼熟就点"认识"' : '学习模式：听单词→跟读→看例句→听例句'}</div>
+
+    <!-- 选择题区 -->
+    <div id="quizPhase" style="${isReview ? '' : 'display:none;'}">
+      <div class="quiz-title" style="font-size:16px; margin-bottom:12px; text-align:center;">这个单词是什么意思？</div>
+      <div class="options" id="vocabOptions">
+        ${vocabQuizOptions.map((opt, i) => `
+          <button class="option-btn" onclick="vocabSelectOption(${i})" id="vocab-opt-${i}">
+            <span class="option-label">${String.fromCharCode(65+i)}</span>${opt}
+          </button>
+        `).join('')}
+      </div>
+    </div>
+
+    <!-- 自评区（选对后显示） -->
+    <div id="selfEvalPhase" style="display:none; text-align:center;">
+      <div class="feedback correct" style="margin-bottom:16px;">✅ 答对了！你对这个词熟悉吗？</div>
+      <div style="display:flex; gap:10px; flex-direction:column;">
+        <button class="flashcard-btn know" onclick="vocabSelfEval('known')" style="width:100%;">😎 认识，很熟</button>
+        <button class="flashcard-btn" style="width:100%; background:#faad14; color:#fff;" onclick="vocabSelfEval('guess')">🤔 猜对了，其实不太熟</button>
+        <button class="flashcard-btn unknown" style="width:100%;" onclick="vocabSelfEval('familiar')">😐 有点印象，明天再看看</button>
+      </div>
+    </div>
+
+    <!-- 答错反馈区 -->
+    <div id="wrongPhase" style="display:none; text-align:center;">
+      <div class="feedback wrong" style="margin-bottom:12px;">❌ 答错了</div>
+      <div style="background:#f6ffed; border:1px solid #b7eb8f; border-radius:12px; padding:16px; margin-bottom:16px;">
+        <div style="font-weight:bold; color:#52c41a; margin-bottom:8px;">正确答案：${word.meaning}</div>
+        <div style="font-size:14px; color:#666; margin-bottom:8px;">📖 例句：</div>
+        <div style="font-size:14px; margin-bottom:4px;">${highlightWord(word.example, word.word)}</div>
+        <div style="font-size:13px; color:#999;">${word.exampleCn}</div>
+        <button class="flashcard-example-speak" onclick="playExampleAudio('${word.example.replace(/'/g, "\\'")}')" style="margin-top:8px;">🔊 听例句</button>
+      </div>
+      <button class="action-btn primary" style="width:100%;" onclick="vocabNext()">下一个词 →</button>
+    </div>
+
+    <div class="flashcard-progress" id="vocabProgressHint">${isReview ? '复习模式：选出正确意思' : '学习模式：先听单词跟读，再做选择题'}</div>
   `;
 
-  // 自动播放单词发音（学习模式下）
-  if (!isReview) {
-    setTimeout(() => playWordAudio(word.word), 500);
+  // 自动播放单词发音
+  safeTimeout(() => playWordAudio(word.word), 500);
+}
+
+function vocabGoToQuiz() {
+  playClickSound();
+  document.getElementById('listenPhase').style.display = 'none';
+  document.getElementById('quizPhase').style.display = '';
+  vocabPhase = 'quiz';
+  // 显示例句提示
+  const word = vocabData[state.vocabIndex];
+  document.getElementById('listenHint').innerHTML = `📖 例句：<br>${word.example}<br><span style="color:#999;font-size:12px;">${word.exampleCn}</span>`;
+}
+
+function vocabSelectOption(index) {
+  playClickSound();
+  if (vocabPhase !== 'quiz') return;
+
+  const word = vocabData[state.vocabIndex];
+  const selectedMeaning = vocabQuizOptions[index];
+  const isCorrect = selectedMeaning === word.meaning;
+  vocabSelectedAnswer = index;
+
+  // 禁用所有选项
+  document.querySelectorAll('#vocabOptions .option-btn').forEach((btn, i) => {
+    btn.disabled = true;
+    if (i === index) {
+      btn.classList.add(isCorrect ? 'correct' : 'wrong');
+    }
+    if (vocabQuizOptions[i] === word.meaning) {
+      btn.classList.add('correct');
+    }
+  });
+
+  if (isCorrect) {
+    playCorrectSound();
+    // 显示自评区
+    safeTimeout(() => {
+      document.getElementById('quizPhase').style.display = 'none';
+      document.getElementById('selfEvalPhase').style.display = '';
+      vocabPhase = 'selfeval';
+    }, 600);
+  } else {
+    playWrongSound();
+    state.vocabUnknown++;
+    state.vocabMastery[word.word] = 0; // 不认识，明天复习
+    // 显示答错反馈
+    safeTimeout(() => {
+      document.getElementById('quizPhase').style.display = 'none';
+      document.getElementById('wrongPhase').style.display = '';
+      vocabPhase = 'wrong';
+    }, 600);
+  }
+}
+
+function vocabSelfEval(level) {
+  playClickSound();
+  const word = vocabData[state.vocabIndex];
+
+  if (level === 'known') {
+    state.vocabKnown++;
+    state.vocabMastery[word.word] = 2; // 认识，明天不复习
+  } else if (level === 'guess') {
+    state.vocabKnown++;
+    state.vocabMastery[word.word] = 1; // 猜对了，明天复习
+  } else { // familiar
+    state.vocabKnown++;
+    state.vocabMastery[word.word] = 1; // 有点印象，明天复习
+  }
+
+  vocabNext();
+}
+
+function vocabNext() {
+  playClickSound();
+  state.vocabIndex++;
+  saveProgress();
+
+  if (state.vocabIndex >= vocabData.length) {
+    finishVocab();
+  } else {
+    const isReview = state.currentTask === 'review';
+    renderVocab(isReview);
   }
 }
 
 function highlightWord(sentence, word) {
   const regex = new RegExp(`\\b${word}\\b`, 'gi');
   return sentence.replace(regex, `<span class="highlight">${word}</span>`);
-}
-
-function flipCard() {
-  playClickSound();
-  const card = document.getElementById('flashcard');
-  card.classList.toggle('flipped');
-  // 如果翻到背面，自动播放例句
-  if (card.classList.contains('flipped')) {
-    const word = vocabData[state.vocabIndex];
-    setTimeout(() => playExampleAudio(word.example), 300);
-  }
 }
 
 function playWordAudio(word) {
@@ -969,30 +1096,6 @@ function playWordAudio(word) {
 
 function playExampleAudio(sentence) {
   speakExample(sentence);
-}
-
-function vocabAnswer(known) {
-  playClickSound();
-  const word = vocabData[state.vocabIndex];
-
-  if (known) {
-    playCorrectSound();
-    state.vocabKnown++;
-    state.vocabMastery[word.word] = (state.vocabMastery[word.word] || 0) + 1;
-  } else {
-    playWrongSound();
-    state.vocabUnknown++;
-    state.vocabMastery[word.word] = 0;
-  }
-
-  state.vocabIndex++;
-
-  if (state.vocabIndex >= vocabData.length) {
-    finishVocab();
-  } else {
-    const isReview = state.currentTask === 'review';
-    renderVocab(isReview);
-  }
 }
 
 function finishVocab() {
