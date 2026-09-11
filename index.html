@@ -340,18 +340,18 @@ body {
 <script>
 // ===== 数据：听力（Day 1）=====
 // 每道题有 startTime 和 endTime（秒），用于控制音频播放片段
-// 时间点为估算值，测试后根据反馈微调
+// 时间点通过音频静音分析得出，准确对应每道题的两遍播放
 const listeningData = [
   { question: "Which sport are the friends going to do today?", options: ["Tennis", "Football", "Swimming"], correct: 2,
-    startTime: 8, endTime: 32,
+    startTime: 5, endTime: 60,
     transcript: "Boy: It's such a sunny day! Shall we go to the park for a game of tennis?\nGirl: I'd love to, but I've got a sore arm, so I can't hold the racket.\nBoy: Oh, what about football then?\nGirl: Actually, my brother has taken the ball. Why don't we just head to the pool? A cool swim sounds perfect in this heat.\nBoy: Good idea. Let's go.",
     explanation: "女孩说胳膊疼不能打网球，弟弟拿走了足球不能踢，最后建议去游泳(go to the pool)，男孩同意了。所以选C Swimming。" },
   { question: "What did the woman leave on the bus?", options: ["A handbag", "Sunglasses", "An umbrella"], correct: 1,
-    startTime: 37, endTime: 62,
+    startTime: 67, endTime: 103,
     transcript: "Woman: Excuse me, I think I left something on the number 10 bus earlier.\nStaff: Was it a handbag? A black one was found this morning.\nWoman: No, I have mine right here. I thought I might have left my umbrella because it started raining, but I just found that in my car. It must be my sunglasses. I remember taking them off when I got on the bus.",
     explanation: "女士说手提包还在，雨伞在车里找到了，最后确定是太阳镜(sunglasses)落在公交车上了。所以选B Sunglasses。" },
   { question: "What time will the meeting start?", options: ["2:30", "2:45", "3:00"], correct: 1,
-    startTime: 67, endTime: 92,
+    startTime: 110, endTime: 139,
     transcript: "Man: Is the meeting still at half past two?\nWoman: It was supposed to be, but Mr Jenkins is running late from another appointment. He asked if we could push it back by fifteen minutes.\nMan: That's fine. I thought it might be delayed until quarter to three, so that's not too bad. See you then.",
     explanation: "会议原定2:30，Mr Jenkins要求推迟15分钟(push it back by fifteen minutes)，所以是2:45。选B。" }
 ];
