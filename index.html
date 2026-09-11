@@ -335,7 +335,7 @@ body {
 
 </div>
 
-<audio id="audioPlayer" preload="auto"></audio>
+<audio id="audioPlayer" preload="auto" src="assets/PET听力整套(1).mp3"></audio>
 
 <script>
 // ===== 数据：听力（Day 1：Part 1 + Part 2，共13道题）=====
@@ -686,8 +686,9 @@ function renderListening() {
     <div class="audio-player">
       <div style="display:flex;gap:16px;justify-content:center;align-items:center;margin-bottom:10px;">
         <button class="play-btn" id="replayBtn" onclick="replayListening()">🔁</button>
+        <button class="play-btn" id="stopBtn" onclick="stopListeningSegment()" style="background:#ff4d4f;">⏹️</button>
       </div>
-      <div class="audio-hint">🔊 本题音频自动播放 | 🔁 点击重播</div>
+      <div class="audio-hint">🔊 自动播放 | 🔁 重播 | ⏹️ 停止</div>
       <div class="audio-time" id="audioTime">正在加载...</div>
     </div>
     <div class="options" id="optionsContainer">
@@ -720,29 +721,28 @@ function playListeningSegment(startTime, endTime) {
     listeningInterval = null;
   }
 
-  audio.src = 'assets/PET听力整套(1).mp3';
+  // 确保播放速度正常（不变形）
+  audio.playbackRate = 1.0;
 
-  audio.addEventListener('loadedmetadata', function onLoaded() {
-    audio.removeEventListener('loadedmetadata', onLoaded);
-    audio.currentTime = startTime;
-    audio.play().then(() => {
-      replayBtn.classList.add('playing');
-      // 监听播放进度，到endTime自动停止
-      listeningInterval = setInterval(() => {
-        if (audio.currentTime >= endTime) {
-          audio.pause();
-          clearInterval(listeningInterval);
-          listeningInterval = null;
-          replayBtn.classList.remove('playing');
-        }
-        const cur = Math.floor(audio.currentTime - startTime);
-        const dur = Math.floor(endTime - startTime);
-        timeEl.textContent = `${String(Math.floor(cur/60)).padStart(2,'0')}:${String(cur%60).padStart(2,'0')} / ${String(Math.floor(dur/60)).padStart(2,'0')}:${String(dur%60).padStart(2,'0')}`;
-      }, 100);
-    }).catch(e => {
-      console.log('音频播放失败', e);
-      timeEl.textContent = '音频加载失败，请检查网络';
-    });
+  // 音频已预加载，直接跳转并播放
+  audio.currentTime = startTime;
+  audio.play().then(() => {
+    replayBtn.classList.add('playing');
+    // 监听播放进度，到endTime自动停止
+    listeningInterval = setInterval(() => {
+      if (audio.currentTime >= endTime) {
+        audio.pause();
+        clearInterval(listeningInterval);
+        listeningInterval = null;
+        replayBtn.classList.remove('playing');
+      }
+      const cur = Math.floor(audio.currentTime - startTime);
+      const dur = Math.floor(endTime - startTime);
+      timeEl.textContent = `${String(Math.floor(cur/60)).padStart(2,'0')}:${String(cur%60).padStart(2,'0')} / ${String(Math.floor(dur/60)).padStart(2,'0')}:${String(dur%60).padStart(2,'0')}`;
+    }, 100);
+  }).catch(e => {
+    console.log('音频播放失败', e);
+    timeEl.textContent = '音频加载失败，请检查网络';
   });
 }
 
