@@ -339,14 +339,19 @@ body {
 
 <script>
 // ===== 数据：听力（Day 1）=====
+// 每道题有 startTime 和 endTime（秒），用于控制音频播放片段
+// 时间点为估算值，测试后根据反馈微调
 const listeningData = [
   { question: "Which sport are the friends going to do today?", options: ["Tennis", "Football", "Swimming"], correct: 2,
+    startTime: 8, endTime: 32,
     transcript: "Boy: It's such a sunny day! Shall we go to the park for a game of tennis?\nGirl: I'd love to, but I've got a sore arm, so I can't hold the racket.\nBoy: Oh, what about football then?\nGirl: Actually, my brother has taken the ball. Why don't we just head to the pool? A cool swim sounds perfect in this heat.\nBoy: Good idea. Let's go.",
     explanation: "女孩说胳膊疼不能打网球，弟弟拿走了足球不能踢，最后建议去游泳(go to the pool)，男孩同意了。所以选C Swimming。" },
   { question: "What did the woman leave on the bus?", options: ["A handbag", "Sunglasses", "An umbrella"], correct: 1,
+    startTime: 37, endTime: 62,
     transcript: "Woman: Excuse me, I think I left something on the number 10 bus earlier.\nStaff: Was it a handbag? A black one was found this morning.\nWoman: No, I have mine right here. I thought I might have left my umbrella because it started raining, but I just found that in my car. It must be my sunglasses. I remember taking them off when I got on the bus.",
     explanation: "女士说手提包还在，雨伞在车里找到了，最后确定是太阳镜(sunglasses)落在公交车上了。所以选B Sunglasses。" },
   { question: "What time will the meeting start?", options: ["2:30", "2:45", "3:00"], correct: 1,
+    startTime: 67, endTime: 92,
     transcript: "Man: Is the meeting still at half past two?\nWoman: It was supposed to be, but Mr Jenkins is running late from another appointment. He asked if we could push it back by fifteen minutes.\nMan: That's fine. I thought it might be delayed until quarter to three, so that's not too bad. See you then.",
     explanation: "会议原定2:30，Mr Jenkins要求推迟15分钟(push it back by fifteen minutes)，所以是2:45。选B。" }
 ];
@@ -510,12 +515,19 @@ function speakExample(sentence) {
   }
 }
 
+// 听力片段播放的定时器
+let listeningInterval = null;
+
 // 停止所有音频（HTML5音频 + 人声发音）
 function stopAllAudio() {
   const audio = document.getElementById('audioPlayer');
   if (audio) {
     audio.pause();
     audio.currentTime = 0;
+  }
+  if (listeningInterval) {
+    clearInterval(listeningInterval);
+    listeningInterval = null;
   }
   if ('speechSynthesis' in window) {
     window.speechSynthesis.cancel();
@@ -630,11 +642,10 @@ function renderListening() {
     </div>
     <div class="audio-player">
       <div style="display:flex;gap:16px;justify-content:center;align-items:center;margin-bottom:10px;">
-        <button class="play-btn" id="playBtn" onclick="playListening()">▶️</button>
-        <button class="play-btn" id="stopBtn" onclick="stopListening()" style="background:#ff4d4f;">⏹️</button>
+        <button class="play-btn" id="replayBtn" onclick="replayListening()">🔁</button>
       </div>
-      <div class="audio-hint">▶️ 播放听力音频 | ⏹️ 停止播放</div>
-      <div class="audio-time" id="audioTime">00:00 / 00:00</div>
+      <div class="audio-hint">🔊 本题音频自动播放 | 🔁 点击重播</div>
+      <div class="audio-time" id="audioTime">正在加载...</div>
     </div>
     <div class="options" id="optionsContainer">
       ${q.options.map((opt, i) => `
@@ -650,53 +661,64 @@ function renderListening() {
     </div>
     <div id="transcriptBox" style="display:none;"></div>
   `;
+
+  // 渲染后自动播放本题音频片段
+  setTimeout(() => playListeningSegment(q.startTime, q.endTime), 300);
 }
 
-function playListening() {
-  playClickSound();
+function playListeningSegment(startTime, endTime) {
   const audio = document.getElementById('audioPlayer');
-  const btn = document.getElementById('playBtn');
   const timeEl = document.getElementById('audioTime');
+  const replayBtn = document.getElementById('replayBtn');
 
-  if (state.audioPlaying) {
-    audio.pause();
-    state.audioPlaying = false;
-    btn.classList.remove('playing');
-    btn.textContent = '▶️';
-    return;
+  // 清除之前的监听
+  if (listeningInterval) {
+    clearInterval(listeningInterval);
+    listeningInterval = null;
   }
 
   audio.src = 'assets/PET听力整套(1).mp3';
-  audio.play().then(() => {
-    state.audioPlaying = true;
-    btn.classList.add('playing');
-    btn.textContent = '⏸️';
-  }).catch(e => {
-    console.log('音频播放失败', e);
-    alert('音频加载中，请稍后再试，或检查网络连接');
-  });
 
-  audio.ontimeupdate = () => {
-    const cur = Math.floor(audio.currentTime);
-    const dur = Math.floor(audio.duration) || 0;
-    timeEl.textContent = `${String(Math.floor(cur/60)).padStart(2,'0')}:${String(cur%60).padStart(2,'0')} / ${String(Math.floor(dur/60)).padStart(2,'0')}:${String(dur%60).padStart(2,'0')}`;
-  };
-  audio.onended = () => {
-    state.audioPlaying = false;
-    btn.classList.remove('playing');
-    btn.textContent = '▶️';
-  };
+  audio.addEventListener('loadedmetadata', function onLoaded() {
+    audio.removeEventListener('loadedmetadata', onLoaded);
+    audio.currentTime = startTime;
+    audio.play().then(() => {
+      replayBtn.classList.add('playing');
+      // 监听播放进度，到endTime自动停止
+      listeningInterval = setInterval(() => {
+        if (audio.currentTime >= endTime) {
+          audio.pause();
+          clearInterval(listeningInterval);
+          listeningInterval = null;
+          replayBtn.classList.remove('playing');
+        }
+        const cur = Math.floor(audio.currentTime - startTime);
+        const dur = Math.floor(endTime - startTime);
+        timeEl.textContent = `${String(Math.floor(cur/60)).padStart(2,'0')}:${String(cur%60).padStart(2,'0')} / ${String(Math.floor(dur/60)).padStart(2,'0')}:${String(dur%60).padStart(2,'0')}`;
+      }, 100);
+    }).catch(e => {
+      console.log('音频播放失败', e);
+      timeEl.textContent = '音频加载失败，请检查网络';
+    });
+  });
 }
 
-function stopListening() {
+function replayListening() {
   playClickSound();
+  const q = listeningData[state.currentQuestion];
+  playListeningSegment(q.startTime, q.endTime);
+}
+
+function stopListeningSegment() {
   const audio = document.getElementById('audioPlayer');
-  const btn = document.getElementById('playBtn');
+  const replayBtn = document.getElementById('replayBtn');
+  if (listeningInterval) {
+    clearInterval(listeningInterval);
+    listeningInterval = null;
+  }
   audio.pause();
   audio.currentTime = 0;
-  state.audioPlaying = false;
-  btn.classList.remove('playing');
-  btn.textContent = '▶️';
+  if (replayBtn) replayBtn.classList.remove('playing');
 }
 
 function showTranscript() {
@@ -747,7 +769,7 @@ function selectAnswer(index) {
   playClickSound();
   // 选完答案后停止听力音频
   if (state.currentTask === 'listening') {
-    stopListening();
+    stopListeningSegment();
   }
   const data = state.currentTask === 'listening' ? listeningData : readingData;
   const q = data[state.currentQuestion];
