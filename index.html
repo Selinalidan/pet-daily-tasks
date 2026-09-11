@@ -1088,7 +1088,16 @@ function renderVocab(isReview) {
 
     <!-- 自评区（选对后显示） -->
     <div id="selfEvalPhase" style="display:none; text-align:center;">
-      <div class="feedback correct" style="margin-bottom:16px;">✅ 答对了！你对这个词熟悉吗？</div>
+      <div class="feedback correct" style="margin-bottom:16px;">✅ 答对了！</div>
+      <!-- 例句学习区 -->
+      <div style="background:#f0f5ff; border:1px solid #adc6ff; border-radius:12px; padding:16px; margin-bottom:16px; text-align:left;">
+        <div style="font-size:13px; color:#666; margin-bottom:8px;">📖 跟读这个例句：</div>
+        <div style="font-size:15px; margin-bottom:6px;" id="selfEvalExampleEn">${highlightWord(word.example, word.word)}</div>
+        <div style="font-size:13px; color:#999; margin-bottom:8px;" id="selfEvalExampleCn">${word.exampleCn}</div>
+        <button class="flashcard-example-speak" id="selfEvalSpeakBtn" onclick="playExampleAudio('${word.example.replace(/'/g, "\\'")}')" style="margin-bottom:8px;">🔊 再听一遍</button>
+        <div style="font-size:12px; color:#faad14;">👄 跟着大声读一遍，然后选你对这个词的熟悉程度</div>
+      </div>
+      <div style="font-size:15px; font-weight:bold; margin-bottom:12px;">你对这个词熟悉吗？</div>
       <div style="display:flex; gap:10px; flex-direction:column;">
         <button class="flashcard-btn know" onclick="vocabSelfEval('known')" style="width:100%;">😎 认识，很熟</button>
         <button class="flashcard-btn" style="width:100%; background:#faad14; color:#fff;" onclick="vocabSelfEval('guess')">🤔 猜对了，其实不太熟</button>
@@ -1099,12 +1108,13 @@ function renderVocab(isReview) {
     <!-- 答错反馈区 -->
     <div id="wrongPhase" style="display:none; text-align:center;">
       <div class="feedback wrong" style="margin-bottom:12px;">❌ 答错了</div>
-      <div style="background:#f6ffed; border:1px solid #b7eb8f; border-radius:12px; padding:16px; margin-bottom:16px;">
+      <div style="background:#f6ffed; border:1px solid #b7eb8f; border-radius:12px; padding:16px; margin-bottom:16px; text-align:left;">
         <div style="font-weight:bold; color:#52c41a; margin-bottom:8px;">正确答案：${word.meaning}</div>
-        <div style="font-size:14px; color:#666; margin-bottom:8px;">📖 例句：</div>
-        <div style="font-size:14px; margin-bottom:4px;">${highlightWord(word.example, word.word)}</div>
-        <div style="font-size:13px; color:#999;">${word.exampleCn}</div>
-        <button class="flashcard-example-speak" onclick="playExampleAudio('${word.example.replace(/'/g, "\\'")}')" style="margin-top:8px;">🔊 听例句</button>
+        <div style="font-size:13px; color:#666; margin-bottom:8px;">📖 跟读这个例句，记住它：</div>
+        <div style="font-size:15px; margin-bottom:4px;">${highlightWord(word.example, word.word)}</div>
+        <div style="font-size:13px; color:#999; margin-bottom:8px;">${word.exampleCn}</div>
+        <button class="flashcard-example-speak" onclick="playExampleAudio('${word.example.replace(/'/g, "\\'")}')" style="margin-bottom:8px;">🔊 再听一遍</button>
+        <div style="font-size:12px; color:#faad14;">👄 跟着大声读两遍，加深印象</div>
       </div>
       <button class="action-btn primary" style="width:100%;" onclick="vocabNext()">下一个词 →</button>
     </div>
@@ -1121,9 +1131,8 @@ function vocabGoToQuiz() {
   document.getElementById('listenPhase').style.display = 'none';
   document.getElementById('quizPhase').style.display = '';
   vocabPhase = 'quiz';
-  // 显示例句提示
-  const word = vocabData[state.vocabIndex];
-  document.getElementById('listenHint').innerHTML = `📖 例句：<br>${word.example}<br><span style="color:#999;font-size:12px;">${word.exampleCn}</span>`;
+  // 选择题阶段不显示例句，防止透题
+  document.getElementById('listenHint').innerHTML = '🤔 想一想这个单词是什么意思<br>👇 从下面选一个正确答案';
 }
 
 function vocabSelectOption(index) {
@@ -1148,21 +1157,25 @@ function vocabSelectOption(index) {
 
   if (isCorrect) {
     playCorrectSound();
-    // 显示自评区
+    // 显示自评区，并自动朗读例句
     safeTimeout(() => {
       document.getElementById('quizPhase').style.display = 'none';
       document.getElementById('selfEvalPhase').style.display = '';
       vocabPhase = 'selfeval';
+      // 自动朗读例句
+      safeTimeout(() => playExampleAudio(word.example), 500);
     }, 600);
   } else {
     playWrongSound();
     state.vocabUnknown++;
     state.vocabMastery[word.word] = 0; // 不认识，明天复习
-    // 显示答错反馈
+    // 显示答错反馈，并自动朗读例句
     safeTimeout(() => {
       document.getElementById('quizPhase').style.display = 'none';
       document.getElementById('wrongPhase').style.display = '';
       vocabPhase = 'wrong';
+      // 自动朗读例句
+      safeTimeout(() => playExampleAudio(word.example), 500);
     }, 600);
   }
 }
