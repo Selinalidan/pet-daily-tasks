@@ -339,8 +339,8 @@ body {
 
 </div>
 
-<!-- 隐藏的audio元素，用于备用；主要用Web Audio API播放 -->
-<audio id="audioPlayer" preload="none"></audio>
+<!-- 听力音频：页面加载时预加载，只设置一次src，播放时只跳转currentTime -->
+<audio id="audioPlayer" preload="auto" src="assets/PET听力整套(1).mp3"></audio>
 
 <script>
 // ===== 数据：听力（Day 1：Part 1 + Part 2，共13道题）=====
@@ -871,8 +871,56 @@ function renderListening() {
 }
 
 function playListeningSegment(startTime, endTime) {
-  // 使用Web Audio API播放，音质更好，不会变形
-  playListeningSegmentWebAudio(startTime, endTime);
+  const audio = document.getElementById('audioPlayer');
+  const timeEl = document.getElementById('audioTime');
+  const replayBtn = document.getElementById('replayBtn');
+
+  // 清除之前的监听
+  if (listeningInterval) {
+    clearInterval(listeningInterval);
+    listeningInterval = null;
+  }
+
+  // 确保播放速度正常（不变形）
+  audio.playbackRate = 1.0;
+  audio.volume = 1.0;
+
+  // 音频已预加载（只设置一次src），直接跳转并播放
+  try {
+    audio.currentTime = startTime;
+  } catch(e) {
+    console.log('设置currentTime失败，等待加载', e);
+  }
+
+  const playPromise = audio.play();
+  if (playPromise !== undefined) {
+    playPromise.then(() => {
+      replayBtn.classList.add('playing');
+      // 监听播放进度，到endTime自动停止
+      listeningInterval = setInterval(() => {
+        if (audio.currentTime >= endTime) {
+          audio.pause();
+          clearInterval(listeningInterval);
+          listeningInterval = null;
+          replayBtn.classList.remove('playing');
+        }
+        const cur = Math.floor(audio.currentTime - startTime);
+        const dur = Math.floor(endTime - startTime);
+        if (timeEl) {
+          timeEl.textContent = `${String(Math.floor(cur/60)).padStart(2,'0')}:${String(cur%60).padStart(2,'0')} / ${String(Math.floor(dur/60)).padStart(2,'0')}:${String(dur%60).padStart(2,'0')}`;
+        }
+      }, 100);
+    }).catch(e => {
+      console.log('音频播放失败（可能需要用户交互）', e);
+      if (timeEl) {
+        timeEl.textContent = '👆 点击上方🔁按钮开始播放';
+      }
+      // 自动播放被浏览器阻止，提示用户点击重播按钮
+      if (replayBtn) {
+        replayBtn.style.animation = 'pulse 1s infinite';
+      }
+    });
+  }
 }
 
 function replayListening() {
@@ -1122,8 +1170,22 @@ function renderVocab(isReview) {
     <div class="flashcard-progress" id="vocabProgressHint">${isReview ? '复习模式：选出正确意思' : '学习模式：先听单词跟读，再做选择题'}</div>
   `;
 
-  // 自动播放单词发音
-  safeTimeout(() => playWordAudio(word.word), 500);
+  // 自动播放单词发音（如果用户已经交互过）
+  if (userInteracted) {
+    safeTimeout(() => playWordAudio(word.word), 500);
+  } else {
+    // 用户还没交互，提示点击喇叭按钮
+    safeTimeout(() => {
+      const hint = document.getElementById('listenHint');
+      if (hint) {
+        hint.innerHTML = '👆 点击上方🔊按钮听单词发音<br>（手机需要先点击一下才能播放声音）';
+      }
+      const btn = document.getElementById('wordSpeakBtn');
+      if (btn) {
+        btn.style.animation = 'pulse 1s infinite';
+      }
+    }, 500);
+  }
 }
 
 function vocabGoToQuiz() {
@@ -1424,8 +1486,36 @@ function showStats() {
 loadProgress();
 updateTaskStatus();
 updateProgress();
-// 预加载听力音频（用Web Audio API，音质更好，不会自动播放）
-loadListeningAudio();
+
+// 全局用户交互检测：手机浏览器需要用户先点击才能播放音频
+let userInteracted = false;
+function unlockAudio() {
+  if (userInteracted) return;
+  userInteracted = true;
+  // 初始化Web Audio API上下文（用于音效）
+  initAudio();
+  if (audioCtx && audioCtx.state === 'suspended') {
+    audioCtx.resume();
+  }
+  // 尝试播放一个静音片段来解锁HTML5 audio
+  const audio = document.getElementById('audioPlayer');
+  if (audio) {
+    audio.volume = 0;
+    const playPromise = audio.play();
+    if (playPromise !== undefined) {
+      playPromise.then(() => {
+        audio.pause();
+        audio.currentTime = 0;
+        audio.volume = 1;
+      }).catch(() => {});
+    }
+  }
+  // 移除事件监听器
+  document.removeEventListener('click', unlockAudio);
+  document.removeEventListener('touchstart', unlockAudio);
+}
+document.addEventListener('click', unlockAudio);
+document.addEventListener('touchstart', unlockAudio);
 </script>
 </body>
 </html>
