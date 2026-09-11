@@ -1287,30 +1287,121 @@ function showWrongBook() {
     `;
   } else {
     container.innerHTML = `
+      <div style="font-size:13px;color:#999;margin-bottom:12px;text-align:center;">共 ${state.wrongQuestions.length} 道错题 · 重做对了会自动移除</div>
       <div class="wrong-list">
         ${state.wrongQuestions.map((w, i) => `
-          <div class="wrong-item">
+          <div class="wrong-item" id="wrong-item-${i}">
             <div class="wrong-question">${i+1}. ${w.question}</div>
             <div class="wrong-answer">
               你的答案：<span class="wrong">${String.fromCharCode(65+w.wrong)}. ${w.options[w.wrong]}</span><br>
               正确答案：<span class="correct">${String.fromCharCode(65+w.correct)}. ${w.options[w.correct]}</span>
             </div>
-            <div style="font-size:12px;color:#aaa;margin-top:6px;">💡 ${w.explanation}</div>
+            <div style="font-size:12px;color:#aaa;margin-top:6px;margin-bottom:10px;">💡 ${w.explanation}</div>
+            <div style="display:flex;gap:8px;">
+              <button class="action-btn primary" style="flex:1;font-size:13px;padding:8px;" onclick="redoWrongQuestion(${i})">🔄 重做此题</button>
+              <button class="action-btn secondary" style="flex:1;font-size:13px;padding:8px;" onclick="deleteWrongQuestion(${i})">🗑️ 已掌握，删除</button>
+            </div>
           </div>
         `).join('')}
       </div>
-      <button class="action-btn secondary" style="width:100%;" onclick="clearWrongBook()">🗑️ 清空错题本</button>
     `;
   }
 
   showWrongPage();
 }
 
-function clearWrongBook() {
-  if (confirm('确定要清空错题本吗？')) {
-    state.wrongQuestions = [];
-    saveProgress();
-    showWrongBook();
+// 删除单道错题
+function deleteWrongQuestion(index) {
+  if (!confirm('确定这道题已经掌握了，要从错题本删除吗？')) return;
+  playClickSound();
+  state.wrongQuestions.splice(index, 1);
+  saveProgress();
+  showWrongBook();
+}
+
+// 重做错题
+let redoIndex = -1;
+function redoWrongQuestion(index) {
+  playClickSound();
+  redoIndex = index;
+  const w = state.wrongQuestions[index];
+  const container = document.getElementById('wrongBookContent');
+
+  container.innerHTML = `
+    <div class="quiz-header">
+      <div class="quiz-progress">
+        <span class="quiz-num">重做错题 ${index+1}/${state.wrongQuestions.length}</span>
+      </div>
+      <div class="quiz-title">🔄 再做一次，做对了就移除</div>
+    </div>
+
+    <div style="background:#fffbe6;border:1px solid #ffe58f;border-radius:12px;padding:16px;margin-bottom:16px;">
+      <div style="font-size:16px;font-weight:600;margin-bottom:12px;">${w.question}</div>
+      <div class="options" id="redoOptions">
+        ${w.options.map((opt, i) => `
+          <button class="option-btn" onclick="checkRedoAnswer(${i})" id="redo-opt-${i}">
+            <span class="option-label">${String.fromCharCode(65+i)}</span>${opt}
+          </button>
+        `).join('')}
+      </div>
+    </div>
+
+    <div id="redoFeedback" style="display:none;margin-bottom:16px;"></div>
+
+    <button class="action-btn secondary" style="width:100%;" onclick="showWrongBook()">← 返回错题本</button>
+  `;
+}
+
+// 检查重做答案
+function checkRedoAnswer(selectedIndex) {
+  playClickSound();
+  const w = state.wrongQuestions[redoIndex];
+  const isCorrect = selectedIndex === w.correct;
+
+  // 禁用所有选项
+  document.querySelectorAll('#redoOptions .option-btn').forEach((btn, i) => {
+    btn.disabled = true;
+    if (i === selectedIndex) {
+      btn.classList.add(isCorrect ? 'correct' : 'wrong');
+    }
+    if (i === w.correct) {
+      btn.classList.add('correct');
+    }
+  });
+
+  const feedback = document.getElementById('redoFeedback');
+  feedback.style.display = '';
+
+  if (isCorrect) {
+    playCorrectSound();
+    feedback.innerHTML = `
+      <div class="feedback correct show">
+        <div class="feedback-title">✅ 太棒了！做对了！</div>
+        <div style="font-size:14px;margin-top:8px;">这道题已经掌握，从错题本移除 🎉</div>
+      </div>
+    `;
+    // 从错题本移除
+    safeTimeout(() => {
+      state.wrongQuestions.splice(redoIndex, 1);
+      saveProgress();
+      showWrongBook();
+    }, 1500);
+  } else {
+    playWrongSound();
+    feedback.innerHTML = `
+      <div class="feedback wrong show">
+        <div class="feedback-title">❌ 再想想</div>
+        <div style="font-size:14px;margin-top:8px;">正确答案是：<strong>${String.fromCharCode(65+w.correct)}. ${w.options[w.correct]}</strong></div>
+        <div style="font-size:13px;color:#999;margin-top:6px;">💡 ${w.explanation}</div>
+        <div style="font-size:13px;color:#faad14;margin-top:8px;">这道题继续留在错题本，下次再做 💪</div>
+      </div>
+    `;
+    // 2秒后显示返回按钮
+    safeTimeout(() => {
+      feedback.innerHTML += `
+        <button class="action-btn primary" style="width:100%;margin-top:12px;" onclick="showWrongBook()">返回错题本</button>
+      `;
+    }, 1000);
   }
 }
 
