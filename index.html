@@ -510,6 +510,19 @@ function speakExample(sentence) {
   }
 }
 
+// 停止所有音频（HTML5音频 + 人声发音）
+function stopAllAudio() {
+  const audio = document.getElementById('audioPlayer');
+  if (audio) {
+    audio.pause();
+    audio.currentTime = 0;
+  }
+  if ('speechSynthesis' in window) {
+    window.speechSynthesis.cancel();
+  }
+  state.audioPlaying = false;
+}
+
 // 庆祝动画
 function showCelebration(emoji) {
   const el = document.createElement('div');
@@ -521,6 +534,7 @@ function showCelebration(emoji) {
 
 // ===== 页面切换 =====
 function showHome() {
+  stopAllAudio();
   document.getElementById('homePage').style.display = 'block';
   document.getElementById('quizPage').style.display = 'none';
   document.getElementById('wrongPage').style.display = 'none';
@@ -528,6 +542,7 @@ function showHome() {
   window.scrollTo(0, 0);
 }
 function showQuiz() {
+  stopAllAudio();
   document.getElementById('homePage').style.display = 'none';
   document.getElementById('quizPage').style.display = 'block';
   document.getElementById('wrongPage').style.display = 'none';
@@ -535,6 +550,7 @@ function showQuiz() {
   window.scrollTo(0, 0);
 }
 function showWrongPage() {
+  stopAllAudio();
   document.getElementById('homePage').style.display = 'none';
   document.getElementById('quizPage').style.display = 'none';
   document.getElementById('wrongPage').style.display = 'block';
@@ -542,6 +558,7 @@ function showWrongPage() {
   window.scrollTo(0, 0);
 }
 function showComplete() {
+  stopAllAudio();
   document.getElementById('homePage').style.display = 'none';
   document.getElementById('quizPage').style.display = 'none';
   document.getElementById('wrongPage').style.display = 'none';
@@ -581,6 +598,7 @@ function updateProgress() {
 // ===== 开始任务 =====
 function startTask(task) {
   playClickSound();
+  stopAllAudio();
   state.currentTask = task;
   state.currentQuestion = 0;
   state.quizScore = 0;
@@ -611,8 +629,11 @@ function renderListening() {
       <div class="quiz-title">${q.question}</div>
     </div>
     <div class="audio-player">
-      <button class="play-btn" id="playBtn" onclick="playListening()">▶️</button>
-      <div class="audio-hint">点击播放听力音频（真题录音）</div>
+      <div style="display:flex;gap:16px;justify-content:center;align-items:center;margin-bottom:10px;">
+        <button class="play-btn" id="playBtn" onclick="playListening()">▶️</button>
+        <button class="play-btn" id="stopBtn" onclick="stopListening()" style="background:#ff4d4f;">⏹️</button>
+      </div>
+      <div class="audio-hint">▶️ 播放听力音频 | ⏹️ 停止播放</div>
       <div class="audio-time" id="audioTime">00:00 / 00:00</div>
     </div>
     <div class="options" id="optionsContainer">
@@ -667,6 +688,17 @@ function playListening() {
   };
 }
 
+function stopListening() {
+  playClickSound();
+  const audio = document.getElementById('audioPlayer');
+  const btn = document.getElementById('playBtn');
+  audio.pause();
+  audio.currentTime = 0;
+  state.audioPlaying = false;
+  btn.classList.remove('playing');
+  btn.textContent = '▶️';
+}
+
 function showTranscript() {
   playClickSound();
   const q = listeningData[state.currentQuestion];
@@ -713,6 +745,10 @@ function renderReading() {
 // ===== 选择题通用逻辑 =====
 function selectAnswer(index) {
   playClickSound();
+  // 选完答案后停止听力音频
+  if (state.currentTask === 'listening') {
+    stopListening();
+  }
   const data = state.currentTask === 'listening' ? listeningData : readingData;
   const q = data[state.currentQuestion];
   const isCorrect = index === q.correct;
@@ -753,6 +789,7 @@ function selectAnswer(index) {
 
 function nextQuestion() {
   playClickSound();
+  stopAllAudio();
   const data = state.currentTask === 'listening' ? listeningData : readingData;
   state.currentQuestion++;
 
