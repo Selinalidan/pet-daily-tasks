@@ -293,6 +293,10 @@ body {
       </div>
       <div class="task-status todo">去复习</div>
     </div>
+
+    <div style="text-align:center; margin-top:20px; padding:0 16px;">
+      <button onclick="resetProgress()" style="background:#f5f5f5; color:#999; border:1px solid #e8e8e8; padding:8px 16px; border-radius:8px; font-size:13px; cursor:pointer;">🔄 重置今天的进度（重新测试）</button>
+    </div>
   </div>
 
   <!-- 答题页 -->
@@ -501,6 +505,28 @@ function saveProgress() {
       vocabMastery: state.vocabMastery
     }));
   } catch(e) { console.log('保存进度失败', e); }
+}
+
+// 重置今天的进度（用于测试）
+function resetProgress() {
+  if (!confirm('确定要重置今天的所有进度吗？积分、完成状态、错题本都会清空。')) return;
+  stopAllAudio();
+  clearAllTimeouts();
+  state.totalScore = 0;
+  state.completedTasks = {};
+  state.wrongQuestions = [];
+  state.vocabMastery = {};
+  state.currentQuestion = 0;
+  state.vocabIndex = 0;
+  state.quizCorrect = 0;
+  state.quizWrong = 0;
+  state.vocabKnown = 0;
+  state.vocabUnknown = 0;
+  saveProgress();
+  updateTaskStatus();
+  updateProgress();
+  goHome();
+  alert('进度已重置，可以重新测试了！');
 }
 
 // ===== 音效 =====
